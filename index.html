@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <!-- Design System -->
-  <link rel="stylesheet" href="styles.css?v=20260828-1" />
+  <link rel="stylesheet" href="styles.css?v=20260828-2" />
 
   <!-- Favicon inline SVG -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238A724C'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='white' font-family='Inter,sans-serif' font-weight='800'>P</text></svg>" />
@@ -172,6 +172,11 @@
 
     <!-- ─── Main Content ──────────────────────────────────── -->
     <main id="main-content">
+      <!-- Nút mở menu trên Mobile -->
+      <div id="mobile-top-bar">
+        <button id="mobile-menu-btn" aria-label="Mở menu">☰</button>
+      </div>
+      <div id="sidebar-overlay"></div>
 
       <!-- Page Header -->
       <header class="page-header">
@@ -201,7 +206,7 @@
   ══════════════════════════════════════════════════════════ -->
 
   <!-- 1. Config -->
-  <script src="config.js?v=20260828-1"></script>
+  <script src="config.js?v=20260828-2"></script>
 
   <!-- 2. Chart.js (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -210,7 +215,31 @@
   <script src="https://accounts.google.com/gsi/client" id="gsi-script" async defer></script>
 
   <!-- 3. App Logic -->
-  <script src="app.js?v=20260828-1"></script>
+  <script src="app.js?v=20260828-2"></script>
 
+  <!-- Script xử lý Mobile Menu -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const sidebar   = document.getElementById('sidebar');
+      const overlay   = document.getElementById('sidebar-overlay');
+      if (mobileBtn && sidebar && overlay) {
+        mobileBtn.addEventListener('click', () => {
+          sidebar.classList.add('open');
+          overlay.classList.add('open');
+        });
+        overlay.addEventListener('click', () => {
+          sidebar.classList.remove('open');
+          overlay.classList.remove('open');
+        });
+        sidebar.querySelectorAll('.nav-item').forEach(item => {
+          item.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>
