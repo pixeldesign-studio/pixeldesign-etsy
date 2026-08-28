@@ -163,6 +163,12 @@ const App = {
       const isVisible = (role === 'admin' || role === 'sale');
       el.style.display = isVisible ? '' : 'none';
     });
+    // Tab quay ve app PIXEL: chi nhung email khai trong CONFIG.PIXEL_USERS
+    const myEmail = (this.session?.email || '').toLowerCase().trim();
+    const pixelList = (CONFIG.PIXEL_USERS || []).map(e => (e || '').toLowerCase().trim());
+    document.querySelectorAll('[data-role="pixel"]').forEach(el => {
+      el.style.display = pixelList.includes(myEmail) ? '' : 'none';
+    });
   },
 
   navigateTo(page) {
