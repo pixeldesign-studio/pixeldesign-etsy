@@ -1745,8 +1745,60 @@ details[open] .kb-collapse-summary::after {
 }
 
 @media (max-width: 700px) {
-  .kb-detail-body { grid-template-columns: 1fr; }
+  .kb-overlay { padding: 8px; }
+
+  /* Popup chi tiet don: MOT MACH CUON tu tren xuong */
+  .kb-detail-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 88vh;
+    max-height: 88dvh;
+  }
+  .kb-detail-header { padding: 12px; }
+  .kb-detail-body {
+    grid-template-columns: 1fr;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 40px;
+  }
+  /* Bo 2 vung cuon rieng -> ca popup cuon lien mach */
+  .kb-detail-left, .kb-detail-right {
+    overflow-y: visible;
+    height: auto;
+    max-height: none;
+    padding: 12px;
+  }
+  .kb-detail-section {
+    padding: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
   .kb-detail-right { border-top: 1px solid var(--clr-border-light); }
+  .kb-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Cum nut day popup: gon lai, de bam */
+  .kb-detail-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+  }
+  .kb-detail-footer > div { display: contents; }
+  .kb-detail-footer .btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    justify-content: center;
+    margin: 0 !important;
+  }
+  #btn-save-detail {
+    flex: 0 0 100% !important;
+    order: -1;
+  }
+
   .kb-board { gap: 8px; padding: var(--space-3); }
   .kb-col { flex: 0 0 200px; min-width: 200px; }
 }
