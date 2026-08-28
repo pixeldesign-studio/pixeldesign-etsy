@@ -63,6 +63,15 @@ const CONFIG = {
   // ──────────────────────────────────────────────────────────
   // CÀI ĐẶT KHÁC
   // ──────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────
+  // LIÊN KẾT QUAY VỀ APP PIXELDESIGN
+  // Chỉ những email trong PIXEL_USERS mới thấy tab này.
+  // ──────────────────────────────────────────────────────────
+  PIXEL_URL: 'https://crm.pixeldesign.vn',
+  PIXEL_USERS: [
+    'honghoa.giameco@gmail.com',
+  ],
+
   APP_NAME:    'PIXELDESIGN ETSY',
   APP_VERSION: '1.0.0',
 
@@ -76,3 +85,4 @@ const CONFIG = {
 Object.freeze(CONFIG);
 Object.freeze(CONFIG.SHEETS);
 Object.freeze(CONFIG.ROLES);
+Object.freeze(CONFIG.PIXEL_USERS);
