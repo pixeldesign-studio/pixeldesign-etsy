@@ -1750,3 +1750,113 @@ details[open] .kb-collapse-summary::after {
   .kb-board { gap: 8px; padding: var(--space-3); }
   .kb-col { flex: 0 0 200px; min-width: 200px; }
 }
+
+/* ─── RESPONSIVE MOBILE MENU ────────────────────────────────────────────── */
+#mobile-top-bar {
+  display: none;
+}
+#sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* Thanh Top bar cố định cho Mobile */
+  #mobile-top-bar {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: var(--clr-bg);
+    border-bottom: 1px solid var(--clr-border-light);
+    z-index: 998; /* Dưới sidebar (1002) và overlay (1000) */
+    padding-left: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  /* Hiện nút Hamburger bên trong top bar */
+  #mobile-menu-btn {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: var(--clr-card);
+    border: 1px solid var(--clr-border);
+    border-radius: 8px;
+    font-size: 24px;
+    color: var(--clr-text);
+    cursor: pointer;
+  }
+
+  /* Đẩy nội dung xuống để không bị thanh che, giảm lề và điều chỉnh đệm đáy */
+  #main-content {
+    padding-top: 56px;
+    padding-bottom: 40px;
+  }
+
+  /* Nới rộng nội dung ra sát mép */
+  .page-header {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .page-body {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  /* Bỏ giới hạn chiều rộng của card/container để chiếm trọn vùng màn hình */
+  .page-form-container {
+    max-width: none;
+    width: 100%;
+  }
+  
+  .form-section-card {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Sidebar trượt từ bên ngoài vào */
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    z-index: 1002; /* Đè lên nút menu */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 40px;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Lớp phủ màn hình tối lại */
+  #sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  #sidebar-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+}
