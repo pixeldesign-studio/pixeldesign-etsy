@@ -31,10 +31,11 @@ const App = {
     // Kiểm tra session còn hạn VÀ đúng scope version
     // Nếu scopes đã thay đổi (SCOPE_VERSION tăng), buộc đăng nhập lại
     // để lấy token mới với đủ quyền truy cập
-    const scopeOk = this.session?.scopeVersion === CONFIG.SCOPE_VERSION;
+    const scopeOk = (this.session?.scopeVersion ?? this.session?.version) === CONFIG.SCOPE_VERSION;
 
     if (this.session && !this._isTokenExpired() && scopeOk) {
       console.log('[Auth] Session còn hạn và đúng scope version, bỏ qua đăng nhập.');
+      this._batDauGiuPhien();
       this._renderApp();
     } else {
       if (this.session && !scopeOk) {
@@ -57,12 +58,34 @@ const App = {
           this.showToast('Lỗi đăng nhập', 'error');
           return;
         }
+        // ── LAM MOI NGAM: chi thay token, khong chay lai quy trinh dang nhap
+        if (this._dangLamMoiNgam) {
+          const xong = this._dangLamMoiNgam;
+          this._dangLamMoiNgam = null;
+          const hanMoi2 = Date.now() + ((parseInt(tokenResponse.expires_in) || 3600) * 1000);
+          this.session = { ...this.session,
+            accessToken: tokenResponse.access_token,
+            expiresAt: hanMoi2, tokenExpiry: hanMoi2 };
+          localStorage.setItem('pixeldesign_session', JSON.stringify(this.session));
+          console.log('[Auth] Đã làm mới phiên ngầm, hạn mới:', new Date(hanMoi2).toLocaleTimeString('vi-VN'));
+          xong(true);
+          return;
+        }
+
+        // LUU Y: truoc day chi luu expiresAt/version, trong khi init() lai kiem
+        // tokenExpiry/scopeVersion -> luon coi la het han -> moi lan mo app deu
+        // bat dang nhap lai. Nay luu CA HAI ten cho khop.
+        const hanToken = Date.now() + ((parseInt(tokenResponse.expires_in) || 3600) * 1000);
         this.session = {
+          ...(this.session || {}),
           accessToken: tokenResponse.access_token,
-          expiresAt: Date.now() + CONFIG.SESSION_DURATION,
-          version: CONFIG.SCOPE_VERSION
+          expiresAt:    hanToken,
+          tokenExpiry:  hanToken,
+          version:      CONFIG.SCOPE_VERSION,
+          scopeVersion: CONFIG.SCOPE_VERSION
         };
         localStorage.setItem('pixeldesign_session', JSON.stringify(this.session));
+        this._batDauGiuPhien();
         this._checkSession();
       }
     });
@@ -78,7 +101,9 @@ const App = {
   },
 
   _checkSession() {
-    if (this.session && this.session.expiresAt > Date.now() && this.session.version === CONFIG.SCOPE_VERSION) {
+    const hanSession = this.session?.tokenExpiry || this.session?.expiresAt || 0;
+    const phienBanScope = this.session?.scopeVersion ?? this.session?.version;
+    if (this.session && hanSession > Date.now() && phienBanScope === CONFIG.SCOPE_VERSION) {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-shell').classList.remove('hidden');
       this._fetchUserProfile();
@@ -133,6 +158,7 @@ const App = {
       if (profile.error) throw new Error(profile.error.message);
       
       this.session.profile = profile;
+      this.session.email = profile.email;   // dung lam "hint" khi gia han phien
       document.getElementById('user-name').innerText = profile.name || profile.email;
       
       const rows = await this._readSheet(this.session.accessToken, CONFIG.SHEETS.NHAN_SU);
@@ -267,11 +293,25 @@ const App = {
     }
   },
 
-  async _readSheet(token, sheetName, range = '') {
-    if (!token) throw new Error('No token');
+  async _readSheet(token, sheetName, range = '', laLanThu2 = false) {
+    // Bao dam token con song truoc khi goi
+    if (!token) await this._baoDamConPhien();
+    const tk = token || this.session?.accessToken;
+    if (!tk) throw new Error('No token');
+
     const rangeParam = range ? `${sheetName}!${range}` : sheetName;
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${encodeURIComponent(rangeParam)}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${tk}` } });
+
+    // 401 = token het han -> lam moi ngam roi THU LAI MOT LAN
+    if (res.status === 401 && !laLanThu2) {
+      console.warn('[Auth] Sheets trả 401, thử làm mới phiên rồi gọi lại...');
+      const ok = await this._lamMoiPhienNgam();
+      if (ok) return this._readSheet(null, sheetName, range, true);
+      this._phienDaHet();
+      throw new Error('Phiên đăng nhập đã hết hạn.');
+    }
+
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     return this._parseSheet(data.values || []);
@@ -495,9 +535,79 @@ const App = {
   },
 
   _isTokenExpired() {
-    if (!this.session?.tokenExpiry) return true;
-    // Thêm buffer 60 giây để tránh token hết hạn giữa request
-    return Date.now() >= (this.session.tokenExpiry - 60_000);
+    // Chap nhan ca hai ten truong: ban cu luu expiresAt, ban moi luu tokenExpiry
+    const han = this.session?.tokenExpiry || this.session?.expiresAt;
+    if (!han) return true;
+    return Date.now() >= (han - 60_000);   // tru 60 giay de khong het han giua chung
+  },
+
+  // ──────────────────────────────────────────────────────────
+  // GIU PHIEN DANG NHAP — tu gia han, khong bat dang nhap lai
+  // ──────────────────────────────────────────────────────────
+
+  async _lamMoiPhienNgam() {
+    if (this._huaLamMoi) return this._huaLamMoi;
+
+    this._huaLamMoi = new Promise((resolve) => {
+      if (!this.tokenClient) this._initGoogleTokenClient();
+      if (!this.tokenClient) { resolve(false); return; }
+
+      let daXong = false;
+      const xong = (ok) => { if (!daXong) { daXong = true; resolve(ok); } };
+      this._dangLamMoiNgam = xong;
+
+      try {
+        const xinToken = { prompt: '' };
+        const mail = this.session?.profile?.email || this.session?.email;
+        if (mail) xinToken.hint = mail;
+        this.tokenClient.requestAccessToken(xinToken);
+      } catch (e) {
+        console.warn('[Auth] Không gọi được làm mới ngầm:', e.message);
+        this._dangLamMoiNgam = null;
+        xong(false);
+      }
+      setTimeout(() => { this._dangLamMoiNgam = null; xong(false); }, 20000);
+    }).finally(() => { this._huaLamMoi = null; });
+
+    return this._huaLamMoi;
+  },
+
+  async _baoDamConPhien() {
+    if (!this._isTokenExpired()) return true;
+    return await this._lamMoiPhienNgam();
+  },
+
+  _phienDaHet() {
+    console.warn('[Auth] Phiên đã hết và không làm mới được. Yêu cầu đăng nhập lại.');
+    this._clearSession();
+    this.tokenClient = null;
+    try {
+      document.getElementById('app-shell')?.classList.add('hidden');
+      this._showLogin();
+      this._resetLoginButton();
+      this._showLoginError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    } catch (e) {}
+    this._initGoogleTokenClient();
+  },
+
+  _batDauGiuPhien() {
+    if (this._daBatGiuPhien) return;
+    this._daBatGiuPhien = true;
+
+    setInterval(async () => {
+      if (!this.session?.accessToken) return;
+      if (document.hidden) return;
+      if (this._isTokenExpired()) await this._lamMoiPhienNgam();
+    }, 4 * 60 * 1000);
+
+    // iPad/iPhone dong bang tab -> hen gio ngung chay. Quay lai phai kiem NGAY.
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden) return;
+      if (!this.session?.accessToken) return;
+      if (!this._isTokenExpired()) return;
+      const ok = await this._lamMoiPhienNgam();
+      if (!ok) this._phienDaHet();
+    });
   },
 
 
