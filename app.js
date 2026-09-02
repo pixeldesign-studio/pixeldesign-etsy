@@ -2148,10 +2148,11 @@ const App = {
            onclick="App._openCardDetail('${this._escHtml(d.ma_don)}')">
         ${nutXoaHtml}
 
-        <!-- Dòng phụ: mã đơn nội bộ · mã order Etsy -->
+        <!-- Dòng phụ: MÃ ORDER ETSY là mã chính (đây là thứ tra trên sàn),
+             mã nội bộ ETSY-xxxx lui về sau vì chỉ dùng để nối dữ liệu -->
         <div class="kb-c-meta">
-          <span class="kb-c-madon">${this._escHtml(d.ma_don)}</span>
-          ${d.ma_order_etsy ? `<span class="kb-c-makh">${this._escHtml(d.ma_order_etsy)}</span>` : ''}
+          <span class="kb-c-madon">${this._escHtml(d.ma_order_etsy || d.ma_don)}</span>
+          ${d.ma_order_etsy ? `<span class="kb-c-makh">${this._escHtml(d.ma_don)}</span>` : ''}
         </div>
 
         <!-- Tiêu đề thẻ: tên người mua -->
@@ -2250,7 +2251,8 @@ const App = {
   _hoiAnDon(ev, maDon) {
     if (ev) { ev.stopPropagation(); ev.preventDefault(); }
     const d = (this._kanbanData || []).find(x => x.ma_don === maDon) || {};
-    const ten = [d.ma_order_etsy, d.buyer_name].filter(Boolean).join(' · ') || maDon;
+    const ten = [d.buyer_name, maDon].filter(Boolean).join(' · ');
+    const maChinh = d.ma_order_etsy || maDon;
 
     const lop = document.createElement('div');
     lop.className = 'kb-overlay kb-overlay-visible';
@@ -2258,7 +2260,7 @@ const App = {
     lop.innerHTML = `
       <div class="kb-detail-modal" style="max-width:420px;">
         <div class="kb-detail-header">
-          <div><div class="kb-detail-id">Ẩn đơn ${this._escHtml(maDon)}</div>
+          <div><div class="kb-detail-id">Ẩn đơn ${this._escHtml(maChinh)}</div>
           <div class="kb-detail-khach">${this._escHtml(ten)}</div></div>
         </div>
         <div style="padding:20px 24px; font-size:14px; line-height:1.65; color:var(--clr-text-sub);">
@@ -2321,7 +2323,7 @@ const App = {
           <div style="display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--clr-border-light);">
             <div style="flex:1; min-width:0;">
               <div style="font-size:11px; font-weight:800; color:var(--clr-text-muted); letter-spacing:0.03em;">
-                ${this._escHtml(d.ma_don)}${d.ma_order_etsy ? ' · ' + this._escHtml(d.ma_order_etsy) : ''}
+                ${this._escHtml(d.ma_order_etsy || d.ma_don)}${d.ma_order_etsy ? ' · ' + this._escHtml(d.ma_don) : ''}
               </div>
               <div style="font-size:14px; font-weight:700; color:var(--clr-text); margin-top:2px;">
                 ${this._escHtml(d.buyer_name || '—')}
