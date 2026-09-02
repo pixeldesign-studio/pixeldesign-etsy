@@ -1912,3 +1912,324 @@ details[open] .kb-collapse-summary::after {
     visibility: visible;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   KHỐI DƯỚI ĐÂY LẤY NGUYÊN TỪ APP PIXELDESIGN CRM (30/08/2026)
+   để hai app dùng chung một bảng màu Kanban.
+   Sửa màu ở đây thì nhớ sửa cả bên app Pixel cho khớp.
+   ════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════
+   KANBAN — GIAO DIỆN NỀN TỐI            (thêm 30/08/2026)
+   ────────────────────────────────────────────────────────────
+   Chỉ có tác dụng khi #main-content mang class .kanban-dark.
+   App.navigateTo() tự gắn class khi vào màn Kanban và tự gỡ
+   khi sang màn khác — nên các màn hình còn lại KHÔNG bị ảnh hưởng.
+
+   MUỐN QUAY LẠI NỀN SÁNG: xoá nguyên khối này (từ đây tới hết
+   file) và xoá 2 dòng gắn class trong App.navigateTo của app.js.
+   ════════════════════════════════════════════════════════════ */
+
+/* Đổi bộ màu nền tảng chỉ trong phạm vi màn Kanban.
+   Nhờ vậy mọi thành phần đang dùng var(--clr-*) tự chuyển sang tối,
+   không phải sửa từng chỗ một. */
+#main-content.kanban-dark {
+  --clr-bg:            #0B0B0D;
+  --clr-bg-warm:       #131316;
+  --clr-card:          #101014;
+  --clr-surface:       #131316;
+  --clr-border:        rgba(255, 255, 255, 0.14);
+  --clr-border-light:  rgba(255, 255, 255, 0.10);
+  --clr-text:          #FFFFFF;
+  --clr-text-sub:      rgba(255, 255, 255, 0.66);
+  --clr-text-muted:    rgba(255, 255, 255, 0.45);
+  --clr-accent:        #D8C4A4;   /* champagne nhạt — thay cho xanh neon */
+  --clr-accent-dark:   #C2AC88;
+  --clr-accent-light:  #EADCC6;
+  --clr-accent-gradient: linear-gradient(135deg, #E2D2B6, #CDB694);
+  --clr-hover:         rgba(216, 196, 164, 0.12);
+
+  /* Màu riêng của màn Kanban tối */
+  --kb-nhan:           #D8C4A4;                      /* màu nhấn */
+  --kb-nhan-mo:        rgba(216, 196, 164, 0.15);
+  --kb-nen-the:        #17171C;
+
+  background: #000000;
+}
+
+/* ─── Tiêu đề trang ─────────────────────────────────────────── */
+#main-content.kanban-dark .page-header {
+  background: #101014;
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+#main-content.kanban-dark .page-body { background: #000000; }
+
+/* ─── Thanh trên: tìm kiếm + thống kê ───────────────────────── */
+#main-content.kanban-dark .kb-search::placeholder { color: rgba(255, 255, 255, 0.35); }
+#main-content.kanban-dark .kb-stat-badge {
+  color: #E2D3B8;
+  background: rgba(216, 196, 164, 0.14);
+  border-color: rgba(216, 196, 164, 0.34);
+}
+#main-content.kanban-dark .btn-ghost {
+  background: #131316;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.80);
+}
+#main-content.kanban-dark .btn-ghost:hover {
+  background: #1C1C21;
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #FFFFFF;
+}
+#main-content.kanban-dark .btn-primary {
+  background: #E2D2B6;
+  color: #2A2420;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+#main-content.kanban-dark .btn-primary:hover {
+  background: #EFE2CC;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Thanh cuộn ────────────────────────────────────────────── */
+#main-content.kanban-dark .kb-board,
+#main-content.kanban-dark .kb-col-body { scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
+#main-content.kanban-dark .kb-board::-webkit-scrollbar-thumb,
+#main-content.kanban-dark .kb-col-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); }
+
+/* ─── Cột ─────────────────────────────────────────────────────
+   Cột không có khung, không dải màu. Thẻ nổi thẳng trên nền đen.
+   Tiêu đề cột là chữ beige cỡ lớn — đủ để phân cột, không cần
+   thêm nền màu (thêm vào chỉ làm rối). */
+#main-content.kanban-dark .kb-col {
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+}
+
+/* Cột đang được kéo thẻ vào — dùng outline nên không đẩy bố cục */
+#main-content.kanban-dark .kb-col.kb-col-over {
+  background: rgba(216, 196, 164, 0.05);
+  box-shadow: none;
+  outline: 1px dashed rgba(216, 196, 164, 0.50);
+  outline-offset: 4px;
+}
+
+/* Đầu cột: chỉ còn chữ, đặt thẳng trên nền đen */
+#main-content.kanban-dark .kb-col-header {
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 9px;
+  padding: 2px 4px 13px;
+}
+#main-content.kanban-dark .kb-col-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #E8DFCE;
+  text-transform: none;      /* bỏ viết hoa toàn bộ — chữ dài dễ đọc hơn */
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+#main-content.kanban-dark .kb-col-count {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+}
+#main-content.kanban-dark .kb-col-count::before { content: '·\00a0'; }
+
+/* Bản CSS sáng cũ có luật .kb-col-pending { background: ... !important }.
+   Dấu !important đó thắng cả luật ở trên, làm cột Pending còn nguyên
+   khung đen trong khi 9 cột kia đã trong suốt. Ghi đè lại cho đều. */
+#main-content.kanban-dark .kb-col-pending { background: transparent !important; }
+
+/* Thân cột thẳng hàng với tiêu đề */
+#main-content.kanban-dark .kb-col-body { padding: 0 4px 12px; }
+
+/* ─── Ô thả rỗng ────────────────────────────────────────────── */
+#main-content.kanban-dark .kb-empty-drop {
+  color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.13);
+}
+
+/* ════════════════════════════════════════════════════════════
+   THẺ ĐƠN — NỀN BEIGE SÁNG TRÊN BẢNG TỐI
+   Thẻ sáng nổi hẳn khỏi cột tối. Bên trong thẻ dùng chữ đậm
+   và nhãn pastel như bản sáng cũ, nên đọc rất rõ.
+   Thứ tự đọc: dòng phụ nhỏ → TIÊU ĐỀ to → nhãn → chân thẻ.
+   ════════════════════════════════════════════════════════════ */
+#main-content.kanban-dark .kb-card {
+  background: #F4EFE5;
+  border: 1px solid #DED2BC;
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+#main-content.kanban-dark .kb-card:hover {
+  background: #FBF7EF;
+  border-color: #C2AC88;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(216, 196, 164, 0.45);
+  transform: translateY(-2px);
+}
+#main-content.kanban-dark .kb-card-dragging {
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.85);
+  opacity: 0.85;
+}
+#main-content.kanban-dark .kb-card-cancelled {
+  background: #E4DED2;
+  opacity: 0.5;
+}
+#main-content.kanban-dark .kb-card-cancelled:hover {
+  background: #E4DED2;
+  border-color: #DED2BC;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.55);
+  transform: none;
+}
+
+/* Dòng phụ trên cùng — nhỏ, mờ, không tranh chỗ với tiêu đề */
+.kb-c-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.kb-c-madon {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #7A6A58;
+}
+.kb-c-makh { color: #A2937F; }
+.kb-c-diem {
+  margin-left: auto;
+  background: #2A2420;
+  color: #F4EFE5;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* Tiêu đề thẻ — thứ mắt nhìn thấy đầu tiên */
+.kb-c-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #241E18;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+/* Hàng nhãn */
+.kb-c-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.kb-c-tags:empty { display: none; }
+
+/* Chân thẻ: hạn giao bên trái, người phụ trách bên phải */
+.kb-c-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+  padding-top: 9px;
+  border-top: 1px solid #E4DAC8;
+}
+.kb-c-foot:empty { display: none; }
+
+/* ─── Chip hạn giao trên nền beige ──────────────────────────── */
+#main-content.kanban-dark .kb-card-deadline {
+  background: #DCEEE2;
+  color: #2E6B45;
+  font-weight: 700;
+}
+#main-content.kanban-dark .kb-deadline-overdue { background: #FBDDDC; color: #A93B33 !important; }
+#main-content.kanban-dark .kb-deadline-urgent,
+#main-content.kanban-dark .kb-deadline-soon    { background: #FBE9D2; color: #9C5F22 !important; }
+
+/* ─── Nhãn nhỏ trên nền beige ───────────────────────────────── */
+#main-content.kanban-dark .kb-tag-cancel {
+  background: #FBDDDC;
+  color: #A93B33;
+  border-color: #F0C2C0;
+}
+#main-content.kanban-dark .kb-tag-item {
+  background: #E4DBEE;
+  color: #5B4A7A;
+}
+/* Nhãn pastel vốn vẽ cho nền TRẮNG. Đặt lên nền beige thì mép nhãn
+   biến mất, trông như chữ trôi nổi. Thêm viền mảnh để nhãn ra hình viên. */
+#main-content.kanban-dark .kb-card .kb-label-pill,
+#main-content.kanban-dark .kb-card .kb-tag,
+#main-content.kanban-dark .kb-card .kb-c-trangthai,
+#main-content.kanban-dark .kb-card .kb-card-deadline {
+  border: 1px solid rgba(36, 30, 24, 0.13);
+}
+
+/* Huy hiệu trạng thái (Đang chạy / Đã hủy / Hoàn thành) */
+.kb-c-trangthai {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  line-height: 1.5;
+}
+
+.kb-tag-thudu {
+  background: #D9F2DE;
+  color: #2E6B45;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+
+/* ─── Nút xoá thẻ (chỉ admin thấy) ──────────────────────────── */
+.kb-c-xoa {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(36, 30, 24, 0.08);
+  color: #8A6F5A;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.kb-card { position: relative; }
+.kb-card:hover .kb-c-xoa { opacity: 1; }
+.kb-c-xoa:hover {
+  background: #F3C9C4;
+  color: #A93B33;
+}
+/* Máy cảm ứng không có trạng thái "rê chuột" — hiện mờ sẵn để bấm được */
+@media (hover: none) {
+  .kb-c-xoa { opacity: 0.45; }
+}
+
+/* Chừa chỗ cho nút xoá, tránh đè lên dòng mã đơn */
+.kb-card .kb-c-meta { padding-right: 26px; }
