@@ -1028,7 +1028,10 @@ const App = {
         try {
           this._setUploadProgress(10 + Math.round((i / files.length) * 85), `Đang upload (${i+1}/${files.length}): ${file.name}`);
           const link = await this._uploadFileDrive(file, folderId);
-          links.push(link);
+          // Lưu kèm tên file theo dạng "url|tên" giống app Pixel, để danh
+          // sách đính kèm hiện tên thật thay vì mã file Drive. Đơn cũ không
+          // có phần tên vẫn đọc bình thường.
+          links.push(link + '|' + String(file.name).replace(/[|\n]/g, ' '));
         } catch (e) {
           console.warn('[Drive] Upload lỗi:', file.name, e.message);
           links.push(`[Upload thất bại: ${file.name}]`);
@@ -2367,6 +2370,148 @@ const App = {
 
   // ════════════════════════════════════════════════════════════
   // KHỐI DƯỚI ĐÂY LẤY NGUYÊN TỪ APP PIXELDESIGN CRM (02/09/2026)
+  // ════════════════════════════════════════════════════════════
+
+  // ════════════════════════════════════════════════════════════
+  // XEM ẢNH ĐÍNH KÈM NGAY TẠI CHỖ            (thêm 30/08/2026)
+  // ────────────────────────────────────────────────────────────
+  // Bấm ảnh trong popup -> ảnh mở phủ toàn màn hình, không nhảy
+  // sang tab mới. Bấm ra ngoài / nút ✕ / phím Esc thì đóng lại,
+  // popup đơn hàng bên dưới vẫn còn nguyên.
+  // ════════════════════════════════════════════════════════════
+
+  /** Lấy id file Google Drive từ các dạng link thường gặp. */
+  _idFileDrive(url) {
+    if (!url) return '';
+    const s = String(url);
+    const m = s.match(/\/file\/d\/([-\w]{10,})/)
+           || s.match(/[?&]id=([-\w]{10,})/)
+           || s.match(/\/d\/([-\w]{10,})/);
+    return m ? m[1] : '';
+  },
+
+  /**
+   * Đường dẫn ảnh mà thẻ <img> hiển thị được.
+   * LƯU Ý: link Drive dạng /view hay /preview trả về TRANG WEB chứ
+   * không phải file ảnh — nhét vào <img> là hỏng. Phải đổi sang
+   * dạng thumbnail kèm chiều rộng mong muốn.
+   */
+  _anhXemDuoc(url, rong) {
+    const id = this._idFileDrive(url);
+    return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w${rong}` : url;
+  },
+
+  /** Mở ảnh thứ i trong danh sách file đính kèm của popup đang mở. */
+  _moAnhLon(i) {
+    const ds = (this._fileDinhKem || []).filter(f => f.anh);
+    if (!ds.length) return;
+    this._anhDangXem = Math.max(0, Math.min(i, ds.length - 1));
+
+    let lop = document.getElementById('lop-xem-anh');
+    if (!lop) {
+      lop = document.createElement('div');
+      lop.id = 'lop-xem-anh';
+      lop.className = 'xa-lop';
+      lop.innerHTML =
+        '<button type="button" class="xa-dong" title="Đóng">&#10005;</button>' +
+        '<button type="button" class="xa-truoc" title="Ảnh trước">&#10094;</button>' +
+        '<button type="button" class="xa-sau"   title="Ảnh sau">&#10095;</button>' +
+        '<div class="xa-khung">' +
+          '<img class="xa-anh" alt="">' +
+          '<div class="xa-duoi"><span class="xa-ten"></span>' +
+          '<a class="xa-mo" target="_blank" rel="noopener noreferrer">Mở trong Drive</a>' +
+          '<span class="xa-dem"></span></div>' +
+        '</div>';
+      document.body.appendChild(lop);
+
+      // Bấm ra ngoài vùng ảnh -> đóng
+      lop.addEventListener('click', (e) => {
+        if (!e.target.closest('.xa-khung') && !e.target.closest('.xa-truoc') && !e.target.closest('.xa-sau')) {
+          this._dongAnhLon();
+        }
+      });
+      lop.querySelector('.xa-dong').addEventListener('click', () => this._dongAnhLon());
+      lop.querySelector('.xa-truoc').addEventListener('click', () => this._doiAnhLon(-1));
+      lop.querySelector('.xa-sau').addEventListener('click',  () => this._doiAnhLon(1));
+
+      this._phimAnhLon = (e) => {
+        if (e.key === 'Escape')     { e.stopPropagation(); this._dongAnhLon(); }
+        if (e.key === 'ArrowLeft')  this._doiAnhLon(-1);
+        if (e.key === 'ArrowRight') this._doiAnhLon(1);
+      };
+      document.addEventListener('keydown', this._phimAnhLon, true);
+      requestAnimationFrame(() => lop.classList.add('xa-hien'));
+    }
+    this._veAnhLon();
+  },
+
+  _doiAnhLon(buoc) {
+    const ds = (this._fileDinhKem || []).filter(f => f.anh);
+    if (ds.length < 2) return;
+    this._anhDangXem = (this._anhDangXem + buoc + ds.length) % ds.length;
+    this._veAnhLon();
+  },
+
+  _veAnhLon() {
+    const lop = document.getElementById('lop-xem-anh');
+    const ds = (this._fileDinhKem || []).filter(f => f.anh);
+    if (!lop || !ds.length) return;
+    const f = ds[this._anhDangXem];
+    const img = lop.querySelector('.xa-anh');
+    img.classList.remove('xa-loi');
+    img.src = this._anhXemDuoc(f.url, 1600);
+    img.alt = f.ten || '';
+    img.onerror = () => img.classList.add('xa-loi');
+    lop.querySelector('.xa-ten').textContent = f.ten || '';
+    lop.querySelector('.xa-mo').href = f.url;
+    lop.querySelector('.xa-dem').textContent =
+      ds.length > 1 ? `${this._anhDangXem + 1}/${ds.length}` : '';
+    const nhieu = ds.length > 1 ? '' : 'none';
+    lop.querySelector('.xa-truoc').style.display = nhieu;
+    lop.querySelector('.xa-sau').style.display   = nhieu;
+  },
+
+  _dongAnhLon() {
+    const lop = document.getElementById('lop-xem-anh');
+    if (!lop) return;
+    lop.classList.remove('xa-hien');
+    if (this._phimAnhLon) {
+      document.removeEventListener('keydown', this._phimAnhLon, true);
+      this._phimAnhLon = null;
+    }
+    setTimeout(() => lop.remove(), 180);
+  },
+
+  /**
+   * Bấm vào một dòng file đính kèm.
+   * Ảnh -> mở ô xem tại chỗ. File khác (PDF, ZIP, PSD...) -> để trình
+   * duyệt mở tab mới như cũ.
+   * LƯU Ý: link Drive không có đuôi .jpg nên không thể nhìn link mà biết
+   * là ảnh hay không. App thử tải ảnh thu nhỏ: tải được thì là ảnh,
+   * hỏng thì đánh dấu lại thành file thường (xem _anhHong bên dưới).
+   */
+  _bamFileDinhKem(ev, i) {
+    const f = (this._fileDinhKem || [])[i];
+    if (!f || f.anh === false) return;      // để link tự mở tab mới
+    ev.preventDefault();
+    ev.stopPropagation();
+    const soThuTuAnh = (this._fileDinhKem || []).slice(0, i).filter(x => x.anh !== false).length;
+    this._moAnhLon(soThuTuAnh);
+  },
+
+  /** Ảnh thu nhỏ tải hỏng -> đây không phải ảnh, đổi sang kiểu file thường. */
+  _anhHong(img, i) {
+    if ((this._fileDinhKem || [])[i]) this._fileDinhKem[i].anh = false;
+    img.style.display = 'none';
+    const icon = img.parentElement?.querySelector('.kb-file-icon');
+    if (icon) icon.style.display = '';
+    const a = img.closest('a');
+    if (a) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+  },
+
+
+  // ════════════════════════════════════════════════════════════
+  // KHỐI DƯỚI ĐÂY LẤY NGUYÊN TỪ APP PIXELDESIGN CRM (02/09/2026)
   // Sửa ở đây thì nhớ sửa cả bên app Pixel cho khớp.
   // ════════════════════════════════════════════════════════════
 
@@ -3130,19 +3275,34 @@ const App = {
 
     // File links
     const linkLines = (don.link_anh_kh || don.link_anh || '').split('\n').filter(Boolean);
+    this._fileDinhKem = [];
     const linksHtml = linkLines.length > 0
-      ? linkLines.map((url, i) => {
-          const name  = url.match(/\/([^/]+)\/(view|preview|download)?$/)?.[1] || `File ${i+1}`;
-          const isImg = /\.(jpg|jpeg|png|gif|webp|svg)/i.test(url);
-          return isImg
-            ? `<a href="${this._escHtml(url)}" target="_blank" class="kb-detail-file kb-detail-img-link">
-                 <img src="${this._escHtml(url.replace('view','preview'))}" alt="${i+1}" onerror="this.style.display='none'"/>
-                 <span>${this._escHtml(name)}</span>
-               </a>`
-            : `<a href="${this._escHtml(url)}" target="_blank" class="kb-detail-file">
-                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                 ${this._escHtml(decodeURIComponent(name))}
-               </a>`;
+      ? linkLines.map((dong, i) => {
+          // Dạng lưu: "url" (đơn cũ) hoặc "url|tên file" (đơn mới)
+          const phan = String(dong).split('|');
+          const url  = phan[0];
+          const idDrive = this._idFileDrive(url);
+          const ten = phan.length > 1 && phan[1]
+            ? phan[1]
+            : (idDrive ? `File ${i + 1}`
+                       : (url.match(/\/([^/?#]+)[^/]*$/)?.[1] || `File ${i + 1}`));
+          // Link Drive không có đuôi file -> chưa biết là ảnh hay không.
+          // Cứ thử tải ảnh thu nhỏ, hỏng thì _anhHong đổi lại thành file thường.
+          const coTheLaAnh = !!idDrive || /\.(jpg|jpeg|png|gif|webp|svg)/i.test(url) || /\.(jpg|jpeg|png|gif|webp|svg)/i.test(ten);
+          this._fileDinhKem.push({ url, ten, anh: coTheLaAnh ? true : false });
+
+          const iconFile = `<svg class="kb-file-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${coTheLaAnh ? 'display:none;' : ''}"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+
+          return `<a href="${this._escHtml(url)}"${coTheLaAnh ? '' : ' target="_blank" rel="noopener noreferrer"'}
+                     class="kb-detail-file${coTheLaAnh ? ' kb-detail-img-link' : ''}"
+                     onclick="App._bamFileDinhKem(event, ${i})"
+                     title="${coTheLaAnh ? 'Bấm để xem ảnh lớn' : 'Mở file'}">
+                    ${coTheLaAnh
+                      ? `<img src="${this._escHtml(this._anhXemDuoc(url, 400))}" alt="${i + 1}" loading="lazy" onerror="App._anhHong(this, ${i})"/>`
+                      : ''}
+                    ${iconFile}
+                    <span>${this._escHtml(ten)}</span>
+                  </a>`;
         }).join('')
       : `<p style="color:var(--clr-text-muted);font-size:var(--font-size-sm);">Chưa có file đính kèm.</p>`;
 
@@ -3638,6 +3798,7 @@ const App = {
   },
 
   _closeCardDetail() {
+    this._dongAnhLon();   // đóng ô xem ảnh nếu đang mở
     const overlay = document.getElementById('kb-detail-overlay');
     if (!overlay) return;
     overlay.classList.remove('kb-overlay-visible');
