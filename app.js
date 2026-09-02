@@ -210,6 +210,12 @@ const App = {
 
   navigateTo(page) {
     this.currentPage = page;
+
+    // Màn Kanban dùng giao diện NỀN TỐI, giống hệt app Pixel.
+    // Gắn class để khối CSS "KANBAN — GIAO DIỆN NỀN TỐI" có hiệu lực;
+    // sang màn khác thì tự gỡ ra nên các màn kia không bị ảnh hưởng.
+    const khungChinh = document.getElementById('main-content');
+    if (khungChinh) khungChinh.classList.toggle('kanban-dark', page === 'kanban');
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     const navItem = document.getElementById('nav-' + page);
     if (navItem) navItem.classList.add('active');
@@ -1915,7 +1921,8 @@ const App = {
     // Load DON_HANG + DIEM_DESIGNER + NHAN_SU + COMMENT concurrently
     let donHangList = [], diemDesignerList = [];
     await Promise.allSettled([
-      this._readSheet(this.session.accessToken, CONFIG.SHEETS.DON_HANG || 'DON_ETSY', 'A:T')
+      // Đọc tới cột Z để chắc chắn lấy được cột da_an dù nó nằm ở đâu
+      this._readSheet(this.session.accessToken, CONFIG.SHEETS.DON_HANG || 'DON_ETSY', 'A:Z')
         .then(r => { donHangList = r || []; })
         .catch(e => console.warn('[Kanban] DON_HANG:', e.message)),
       this._readSheet(this.session.accessToken, CONFIG.SHEETS.DIEM_DESIGNER)
@@ -1991,12 +1998,18 @@ const App = {
     const q = filterQ.toLowerCase();
     const donList = this._kanbanData || [];
 
+    // Bỏ các đơn đã ẩn (lên nhầm). Dòng vẫn còn trong Sheets.
+    const chuaAn = donList.filter(d => (d.da_an || '').toLowerCase() !== 'yes');
+    const soDaAn = donList.length - chuaAn.length;
+
     let filtered = q
-      ? donList.filter(d =>
+      ? chuaAn.filter(d =>
           (d.ma_don || '').toLowerCase().includes(q) ||
-          (d.ten_khach || '').toLowerCase().includes(q) ||
-          (d.brand || '').toLowerCase().includes(q))
-      : [...donList];
+          (d.ma_order_etsy || '').toLowerCase().includes(q) ||
+          (d.buyer_name || '').toLowerCase().includes(q) ||
+          (d.shop || '').toLowerCase().includes(q) ||
+          (d.item_name || '').toLowerCase().includes(q))
+      : [...chuaAn];
 
     // Sort by thu_tu
     filtered.sort((a, b) => {
@@ -2025,6 +2038,9 @@ const App = {
           </div>
           <div class="kb-stats">
             <span class="kb-stat-badge">${totalActive} đơn đang chạy</span>
+            ${this.session?.role === 'admin' && soDaAn > 0
+              ? `<button class="btn btn-ghost btn-sm" style="color:#E9A9A2;" onclick="App._moDonDaAn()">${soDaAn} đơn đã ẩn</button>`
+              : ''}
             <button class="btn btn-ghost btn-sm" onclick="App.renderKanbanPage()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
               Tải lại
@@ -2077,13 +2093,13 @@ const App = {
     const draggable    = 'true';
 
     // Label strips at top of card
-    const labelsHtml = labels.length > 0
-      ? `<div class="kb-card-labels">${labels.map(l =>
-          `<span class="kb-label-pill" style="background:${this._escHtml(l.mau)}; color: #fff;" title="${this._escHtml(l.nhan)}">${this._escHtml(l.nhan)}</span>`
-        ).join('')}</div>` : '';
+    // Nhãn nằm chung hàng với các thẻ nhỏ (không bọc div riêng nữa)
+    const labelsHtml = labels.map(l =>
+      `<span class="kb-label-pill" style="background:${this._escHtml(l.mau)}; color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px;" title="${this._escHtml(l.nhan)}">${this._escHtml(l.nhan)}</span>`
+    ).join('');
 
     const turnaroundHtml = d.turnaround 
-      ? `<div style="background:#FCE9E9; color:#B4453C; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; display:inline-flex; align-items:center; gap:4px;" title="Turnaround">
+      ? `<div style="background:#FBE9D2; color:#9C5F22; border:1px solid rgba(36,30,24,0.13); font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; display:inline-flex; align-items:center; gap:4px;" title="Turnaround">
            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
            ${this._escHtml(d.turnaround)}
          </div>` : '';
@@ -2110,6 +2126,19 @@ const App = {
       return `<div style="width:20px; height:20px; border-radius:50%; background:${bg}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; flex-shrink:0;" title="${this._escHtml(name)}">${this._escHtml(initials)}</div>`;
     }).join('') + `</div>` : '';
 
+    // Nút ẩn đơn — chỉ admin thấy. Bấm vào KHÔNG mở popup chi tiết.
+    const nutXoaHtml = this.session?.role === 'admin'
+      ? `<button type="button" class="kb-c-xoa" title="Ẩn đơn này (lên nhầm)"
+                 onclick="App._hoiAnDon(event, '${this._escHtml(d.ma_don)}')">&#10005;</button>`
+      : '';
+
+    // Nhãn phụ: shop, loại, item — gom về một hàng như thẻ bên app Pixel
+    const theNhoHtml = [
+      d.shop ? `<span class="kb-tag kb-tag-item">${this._escHtml(d.shop)}</span>` : '',
+      d.loai ? `<span class="kb-tag kb-tag-item">${this._escHtml(d.loai)}</span>` : '',
+      d.item_name ? `<span class="kb-tag kb-tag-item">${this._escHtml(d.item_name)}</span>` : '',
+    ].join('');
+
     return `
       <div class="kb-card"
            data-don="${this._escHtml(d.ma_don)}"
@@ -2117,15 +2146,26 @@ const App = {
            ondragstart="App._onDragStart(event, '${this._escHtml(d.ma_don)}')"
            ondragend="App._onDragEnd(event)"
            onclick="App._openCardDetail('${this._escHtml(d.ma_don)}')">
-        ${labelsHtml}
-        <div class="kb-card-top">
-          <span class="kb-card-id">${this._escHtml(d.ma_don)}</span>
-          ${d.item_name ? `<span class="kb-tag kb-tag-item">${this._escHtml(d.item_name)}</span>` : ''}
+        ${nutXoaHtml}
+
+        <!-- Dòng phụ: mã đơn nội bộ · mã order Etsy -->
+        <div class="kb-c-meta">
+          <span class="kb-c-madon">${this._escHtml(d.ma_don)}</span>
+          ${d.ma_order_etsy ? `<span class="kb-c-makh">${this._escHtml(d.ma_order_etsy)}</span>` : ''}
         </div>
-        ${(d.shop || d.loai) ? `<div class="kb-card-brand">${[d.shop, d.loai].filter(Boolean).map(x => this._escHtml(x)).join(' &bull; ')}</div>` : ''}
-        <div class="kb-card-name">${this._escHtml(d.ma_order_etsy || '')} - ${this._escHtml(d.buyer_name || '')}</div>
-        <div class="kb-card-footer" style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
-          <div style="display:flex; align-items:center; gap:8px;">
+
+        <!-- Tiêu đề thẻ: tên người mua -->
+        <div class="kb-c-title">${this._escHtml(d.buyer_name || '—')}</div>
+
+        <!-- Nhãn -->
+        <div class="kb-c-tags">
+          ${labelsHtml}
+          ${theNhoHtml}
+        </div>
+
+        <!-- Chân thẻ: turnaround + hạn giao + người phụ trách -->
+        <div class="kb-c-foot">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ${turnaroundHtml}
             ${deadlineHtml}
           </div>
@@ -2191,6 +2231,133 @@ const App = {
     if (diff <= 2) return 'kb-deadline-urgent';
     if (diff <= 7) return 'kb-deadline-soon';
     return '';
+  },
+
+
+  // ════════════════════════════════════════════════════════════
+  // ẨN ĐƠN LÊN NHẦM                          (thêm 02/09/2026)
+  // ────────────────────────────────────────────────────────────
+  // "Xoá" ở đây là ẨN, không phải xoá dòng. Dòng vẫn nằm nguyên
+  // trong Google Sheets, chỉ được đánh dấu cột da_an = yes nên
+  // thẻ biến khỏi bảng Kanban. Bấm nhầm vẫn khôi phục được qua
+  // nút "Đơn đã ẩn". Chỉ tài khoản admin thấy nút này.
+  //
+  // ⚠ Sheet DON_ETSY phải có cột tiêu đề "da_an". Nếu thiếu, app
+  //   báo lỗi rõ ràng chứ không ghi bừa vào cột khác.
+  // ════════════════════════════════════════════════════════════
+
+  /** Bấm nút ✕ trên thẻ. Chặn không cho mở popup chi tiết. */
+  _hoiAnDon(ev, maDon) {
+    if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+    const d = (this._kanbanData || []).find(x => x.ma_don === maDon) || {};
+    const ten = [d.ma_order_etsy, d.buyer_name].filter(Boolean).join(' · ') || maDon;
+
+    const lop = document.createElement('div');
+    lop.className = 'kb-overlay kb-overlay-visible';
+    lop.id = 'lop-an-don';
+    lop.innerHTML = `
+      <div class="kb-detail-modal" style="max-width:420px;">
+        <div class="kb-detail-header">
+          <div><div class="kb-detail-id">Ẩn đơn ${this._escHtml(maDon)}</div>
+          <div class="kb-detail-khach">${this._escHtml(ten)}</div></div>
+        </div>
+        <div style="padding:20px 24px; font-size:14px; line-height:1.65; color:var(--clr-text-sub);">
+          Thẻ sẽ biến khỏi bảng Kanban. Dòng dữ liệu <strong>vẫn còn nguyên</strong>
+          trong Google Sheets — bấm nhầm thì mở "Đơn đã ẩn" để khôi phục.
+        </div>
+        <div class="kb-detail-footer">
+          <button class="btn btn-ghost" onclick="document.getElementById('lop-an-don').remove()">Thôi</button>
+          <button class="btn btn-primary" id="nut-xac-nhan-an"
+                  style="background:#C0392B; color:#fff;"
+                  onclick="App._anDon('${this._escHtml(maDon)}')">Ẩn đơn này</button>
+        </div>
+      </div>`;
+    document.body.appendChild(lop);
+    lop.addEventListener('click', e => { if (e.target === lop) lop.remove(); });
+  },
+
+  /** Ghi da_an = yes vào Sheets rồi vẽ lại bảng. */
+  async _anDon(maDon) {
+    const nut = document.getElementById('nut-xac-nhan-an');
+    if (nut) { nut.disabled = true; nut.textContent = 'Đang ẩn...'; }
+    try {
+      await this._datCoDaAn(maDon, 'yes');
+      document.getElementById('lop-an-don')?.remove();
+      const i = (this._kanbanData || []).findIndex(x => x.ma_don === maDon);
+      if (i !== -1) this._kanbanData[i].da_an = 'yes';
+      this._renderKanbanBoard(document.getElementById('kb-search-input')?.value || '');
+      this.showToast(`Đã ẩn đơn ${maDon}`, 'success');
+    } catch (err) {
+      if (nut) { nut.disabled = false; nut.textContent = 'Ẩn đơn này'; }
+      this.showToast('Không ẩn được: ' + err.message, 'error');
+    }
+  },
+
+  /** Ghi giá trị vào cột da_an của đúng dòng đơn. */
+  async _datCoDaAn(maDon, giaTri) {
+    const ten = CONFIG.SHEETS.DON_ETSY || 'DON_ETSY';
+    const rows = await this._readSheet(this.session.accessToken, ten, 'A:Z');
+    const idx = rows.findIndex(r => r.ma_don === maDon);
+    if (idx === -1) throw new Error('Không tìm thấy đơn ' + maDon);
+
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${encodeURIComponent(ten + '!1:1')}`,
+      { headers: { Authorization: `Bearer ${this.session.accessToken}` } }
+    );
+    const headers = ((await res.json()).values || [[]])[0] || [];
+    const cot = headers.indexOf('da_an');
+    if (cot === -1) {
+      throw new Error('Sheet DON_ETSY chưa có cột "da_an". Thêm tiêu đề này vào ô trống đầu tiên ở hàng 1 rồi thử lại.');
+    }
+    await this._writeSheet(ten, `${this._colIndexToLetter(cot)}${idx + 2}`, [[giaTri]]);
+  },
+
+  /** Màn xem lại các đơn đã ẩn, có nút khôi phục. */
+  _moDonDaAn() {
+    const ds = (this._kanbanData || []).filter(d => (d.da_an || '').toLowerCase() === 'yes');
+    const dong = ds.length === 0
+      ? `<p style="color:var(--clr-text-muted); font-size:14px; text-align:center; padding:28px 0;">Chưa có đơn nào bị ẩn.</p>`
+      : ds.map(d => `
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--clr-border-light);">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11px; font-weight:800; color:var(--clr-text-muted); letter-spacing:0.03em;">
+                ${this._escHtml(d.ma_don)}${d.ma_order_etsy ? ' · ' + this._escHtml(d.ma_order_etsy) : ''}
+              </div>
+              <div style="font-size:14px; font-weight:700; color:var(--clr-text); margin-top:2px;">
+                ${this._escHtml(d.buyer_name || '—')}
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="App._khoiPhucDon('${this._escHtml(d.ma_don)}')">Khôi phục</button>
+          </div>`).join('');
+
+    const lop = document.createElement('div');
+    lop.className = 'kb-overlay kb-overlay-visible';
+    lop.id = 'lop-don-da-an';
+    lop.innerHTML = `
+      <div class="kb-detail-modal" style="max-width:520px;">
+        <div class="kb-detail-header">
+          <div><div class="kb-detail-id">Đơn đã ẩn</div>
+          <div class="kb-detail-khach">${ds.length} đơn · dòng dữ liệu vẫn còn trong Sheets</div></div>
+          <button class="kb-detail-close" onclick="document.getElementById('lop-don-da-an').remove()">✕</button>
+        </div>
+        <div style="padding:6px 24px 20px; max-height:60vh; overflow-y:auto;" id="ds-don-da-an">${dong}</div>
+      </div>`;
+    document.body.appendChild(lop);
+    lop.addEventListener('click', e => { if (e.target === lop) lop.remove(); });
+  },
+
+  /** Bỏ dấu ẩn, thẻ quay lại bảng. */
+  async _khoiPhucDon(maDon) {
+    try {
+      await this._datCoDaAn(maDon, '');
+      const i = (this._kanbanData || []).findIndex(x => x.ma_don === maDon);
+      if (i !== -1) this._kanbanData[i].da_an = '';
+      document.getElementById('lop-don-da-an')?.remove();
+      this._renderKanbanBoard(document.getElementById('kb-search-input')?.value || '');
+      this.showToast(`Đã khôi phục đơn ${maDon}`, 'success');
+    } catch (err) {
+      this.showToast('Không khôi phục được: ' + err.message, 'error');
+    }
   },
 
   _slugify(str) {
