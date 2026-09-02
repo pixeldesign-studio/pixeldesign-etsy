@@ -2407,3 +2407,87 @@ details[open] .kb-collapse-summary::after {
 .kb-overlay.kb-kanban .bf-bar     { background: #F2EDE4; border-color: rgba(42, 36, 32, 0.13); }
 .kb-overlay.kb-kanban .bf-soan    { background: #FAF7F1; border-color: rgba(42, 36, 32, 0.13); }
 .kb-overlay.kb-kanban .bf-kyhieu  { background: #F2EDE4; border-color: rgba(42, 36, 32, 0.13); }
+
+
+/* ════════════════════════════════════════════════════════════
+   Ô XEM ẢNH ĐÍNH KÈM (phủ toàn màn hình)
+   Nằm TRÊN popup chi tiết đơn (popup z-index 2000).
+   Bấm ra ngoài vùng ảnh, nút ✕ hoặc phím Esc thì đóng.
+   ════════════════════════════════════════════════════════════ */
+.xa-lop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.90);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 68px 72px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.xa-lop.xa-hien { opacity: 1; }
+
+.xa-khung {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 100%;
+  max-height: 100%;
+}
+.xa-anh {
+  max-width: min(1200px, 100%);
+  max-height: 76vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
+  display: block;
+}
+/* Ảnh hỏng thì hiện khung rỗng có ghi chú thay vì mất hút */
+.xa-anh.xa-loi {
+  width: 320px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+
+.xa-duoi {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.xa-ten { color: #F2EFE9; font-size: 14px; font-weight: 600; }
+.xa-mo  { color: #D8C4A4; font-size: 12.5px; text-decoration: underline; }
+.xa-mo:hover { color: #EFE2CC; }
+.xa-dem { color: rgba(255, 255, 255, 0.50); font-size: 12.5px; }
+
+.xa-dong, .xa-truoc, .xa-sau {
+  position: fixed;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.xa-dong:hover, .xa-truoc:hover, .xa-sau:hover { background: rgba(255, 255, 255, 0.24); }
+.xa-dong { top: 18px; right: 20px; width: 40px; height: 40px; font-size: 16px; }
+.xa-truoc, .xa-sau { top: 50%; transform: translateY(-50%); width: 44px; height: 44px; font-size: 17px; }
+.xa-truoc { left: 16px; }
+.xa-sau   { right: 16px; }
+
+@media (max-width: 700px) {
+  .xa-lop { padding: 52px 12px 64px; }
+  .xa-anh { max-height: 68vh; }
+  .xa-truoc, .xa-sau { width: 38px; height: 38px; }
+  .xa-truoc { left: 6px; }
+  .xa-sau   { right: 6px; }
+}
