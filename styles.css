@@ -2399,8 +2399,14 @@ details[open] .kb-collapse-summary::after {
 .bf-link {
   color: var(--clr-accent, #9C7E5E);
   text-decoration: underline;
+  text-underline-offset: 2px;
   word-break: break-all;
+  cursor: pointer;
 }
+.bf-link:hover { background: rgba(156, 126, 94, 0.12); border-radius: 3px; }
+/* Trong ô soạn thảo, con trỏ mặc định là chữ I — đổi thành bàn tay
+   để nhân viên biết bấm được. Bấm vào là mở tab mới (xem _bamLinkTrongSoan). */
+.bf-soan .bf-link { cursor: pointer; }
 .kb-brief-display strong { font-weight: 800; }
 
 /* Trong popup, ô xem trước và thanh công cụ theo bộ màu của popup */
