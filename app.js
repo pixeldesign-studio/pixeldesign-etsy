@@ -2552,6 +2552,7 @@ const App = {
         <span class="bf-vach"></span>
         ${n('xoa', '&#10005;', 'Xoá định dạng')}
         <button type="button" class="bf-xem" tabindex="-1"
+                onmousedown="event.preventDefault()"
                 onclick="App._xemKyHieuBrief('${idO}')"
                 title="Xem đúng nội dung sẽ lưu vào Google Sheets">Xem ký hiệu</button>
       </div>`;
@@ -2565,8 +2566,11 @@ const App = {
            contenteditable="true" spellcheck="false"
            data-goi-y="${this._escHtml(goiY || '')}"
            oninput="App._dongBoBrief('${idO}')"
-           onkeyup="App._capNhatNutBrief('${idO}')"
+           onkeydown="App._phimTrongSoan(event,'${idO}')"
+           onkeyup="App._capNhatNutBrief('${idO}'); App._phimLenTrongSoan(event,'${idO}')"
            onmouseup="App._capNhatNutBrief('${idO}')"
+           onclick="App._bamLinkTrongSoan(event)"
+           onblur="App._roiOSoanBrief('${idO}')"
            onpaste="App._danBrief(event,'${idO}')">${this._briefSangSoan(vanBan)}</div>
       <textarea id="${idO}" style="display:none;">${this._escHtml(vanBan || '')}</textarea>
       <div class="bf-kyhieu" id="bf-kyhieu-${idO}" style="display:none;"></div>`;
@@ -2672,14 +2676,116 @@ const App = {
     if (nut) nut.textContent = dangXem ? 'Xem ký hiệu' : 'Quay lại soạn';
   },
 
+  // ── LINK TỰ ĐỘNG ─────────────────────────────────────────────
+  // Chỗ nào có địa chỉ web thì tự biến thành link bấm được. Dùng
+  // chung cho cả ô soạn thảo lẫn ô hiển thị, nên hai bên luôn giống
+  // nhau. Dấu câu dính ở cuối (. , ) ...) bị đẩy ra ngoài link.
+
+  /** Đổi mọi địa chỉ web trong một đoạn HTML đã escape thành thẻ <a>. */
+  _noiLink(html) {
+    return String(html).replace(
+      /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g,
+      (u) => {
+        const duoi = u.match(/[.,;:!?)\]]+$/);
+        const sach = duoi ? u.slice(0, -duoi[0].length) : u;
+        if (!sach) return u;
+        const dia = /^www\./i.test(sach) ? 'https://' + sach : sach;
+        return `<a href="${dia}" target="_blank" rel="noopener noreferrer" class="bf-link">${sach}</a>`
+             + (duoi ? duoi[0] : '');
+      }
+    );
+  },
+
+  /** Bấm vào link ngay trong ô soạn thảo thì mở tab mới,
+   *  vì mặc định trình duyệt chỉ đặt con trỏ chứ không mở. */
+  _bamLinkTrongSoan(ev) {
+    const a = ev.target && ev.target.closest ? ev.target.closest('a') : null;
+    if (!a || !a.href) return;
+    ev.preventDefault();
+    window.open(a.href, '_blank', 'noopener');
+  },
+
+  /**
+   * Biến địa chỉ web vừa gõ xong thành link, giữ nguyên chỗ con trỏ.
+   * ketThuc = true: địa chỉ kết thúc ngay tại con trỏ (lúc bấm Enter).
+   * ketThuc = false: vừa gõ một khoảng trắng sau địa chỉ.
+   */
+  _tuTaoLink(ketThuc) {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return false;
+    const nut = sel.anchorNode;
+    if (!nut || nut.nodeType !== 3) return false;
+    if (nut.parentElement && nut.parentElement.closest('a')) return false;
+
+    const truoc = nut.nodeValue.slice(0, sel.anchorOffset);
+    const mau = ketThuc
+      ? /(https?:\/\/[^\s]+|www\.[^\s]+)$/
+      : /(https?:\/\/[^\s]+|www\.[^\s]+)[\s ]$/;
+    const kq = truoc.match(mau);
+    if (!kq) return false;
+
+    let dc = kq[1];
+    const duoi = dc.match(/[.,;:!?)\]]+$/);
+    if (duoi) dc = dc.slice(0, -duoi[0].length);
+    if (!dc || dc.length < 8) return false;
+
+    const batDau = truoc.length - kq[0].length;
+    const vung = document.createRange();
+    vung.setStart(nut, batDau);
+    vung.setEnd(nut, batDau + dc.length);
+
+    const a = document.createElement('a');
+    a.href = /^www\./i.test(dc) ? 'https://' + dc : dc;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'bf-link';
+    a.textContent = dc;
+    vung.deleteContents();
+    vung.insertNode(a);
+
+    // Đưa con trỏ ra NGOÀI link, nếu không thì gõ tiếp sẽ dính vào link.
+    const sau = document.createRange();
+    const ke = a.nextSibling;
+    if (ke && ke.nodeType === 3) sau.setStart(ke, Math.min(ketThuc ? 0 : 1, ke.nodeValue.length));
+    else sau.setStartAfter(a);
+    sau.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(sau);
+    return true;
+  },
+
+  /** Bấm Enter: nối link trước khi trình duyệt xuống dòng. */
+  _phimTrongSoan(ev, idO) {
+    if (ev.key !== 'Enter') return;
+    if (this._tuTaoLink(true)) this._dongBoBrief(idO);
+  },
+
+  /** Gõ dấu cách xong thì nối link. */
+  _phimLenTrongSoan(ev, idO) {
+    if (ev.key !== ' ' && ev.key !== 'Spacebar') return;
+    if (this._tuTaoLink(false)) this._dongBoBrief(idO);
+  },
+
+  /** Rời khỏi ô soạn: dựng lại nội dung để mọi địa chỉ còn sót
+   *  (dán vào, gõ rồi bấm ra ngoài luôn) đều thành link. */
+  _roiOSoanBrief(idO) {
+    const o = document.getElementById(idO);
+    const soan = document.getElementById(idO + '-soan');
+    if (!o || !soan) return;
+    this._dongBoBrief(idO);
+    if (!/https?:\/\/|www\./i.test(o.value || '')) return;
+    soan.innerHTML = this._briefSangSoan(o.value);
+    soan.classList.toggle('bf-rong', !soan.textContent.trim());
+  },
+
   /** Ký hiệu -> HTML cho Ô SOẠN THẢO (dùng thẻ thật để nút định dạng
    *  của trình duyệt nhận ra: h4, ul, ol, blockquote). */
   _briefSangSoan(text) {
     if (!text) return '';
     const esc = this._escHtml(String(text));
-    const trongDong = (s) => s
+    const trongDong = (s) => this._noiLink(s
       .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
-      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>'));
 
     let html = '', ul = false, ol = false;
     const dongUl = (b) => { if (ul !== b) { html += b ? '<ul>' : '</ul>'; ul = b; } };
@@ -2711,22 +2817,29 @@ const App = {
   /** HTML trong ô soạn thảo -> chuỗi ký hiệu để lưu vào Sheets. */
   _htmlSangBrief(root) {
     const dong = [];
+    const KHOI = 'ul,ol,blockquote,h1,h2,h3,h4,h5,h6,div,p,li';
+
+    /** Một mẩu nhỏ (chữ, thẻ đậm, nghiêng, link…) -> chuỗi ký hiệu. */
+    const bocMot = (n) => {
+      if (n.nodeType === 3) return n.nodeValue.replace(/\u00a0/g, ' ');
+      if (n.nodeType !== 1) return '';
+      const t = n.tagName.toLowerCase();
+      if (t === 'br') return '\n';
+      const trong = chuTrongDong(n);
+      if (!trong.trim()) return trong;
+      const duoi = /\s$/.test(trong) ? ' ' : '';
+      if (t === 'a') {
+        const dia = n.getAttribute('href') || '';
+        return (trong.trim() || dia) + duoi;
+      }
+      if (t === 'b' || t === 'strong') return '**' + trong.trim() + '**' + duoi;
+      if (t === 'i' || t === 'em')     return '*'  + trong.trim() + '*'  + duoi;
+      return trong;
+    };
 
     const chuTrongDong = (node) => {
       let s = '';
-      node.childNodes.forEach(n => {
-        if (n.nodeType === 3) { s += n.nodeValue.replace(/ /g, ' '); return; }
-        if (n.nodeType !== 1) return;
-        const t = n.tagName.toLowerCase();
-        if (t === 'br') { s += '\n'; return; }
-        const trong = chuTrongDong(n);
-        if (!trong.trim()) { s += trong; return; }
-        const dam = (t === 'b' || t === 'strong');
-        const ngh = (t === 'i' || t === 'em');
-        if (dam)      s += '**' + trong.trim() + '**' + (/\s$/.test(trong) ? ' ' : '');
-        else if (ngh) s += '*'  + trong.trim() + '*'  + (/\s$/.test(trong) ? ' ' : '');
-        else s += trong;
-      });
+      node.childNodes.forEach(n => { s += bocMot(n); });
       return s;
     };
 
@@ -2734,38 +2847,52 @@ const App = {
       String(s).split('\n').forEach(l => dong.push(tienTo + l.trim()));
     };
 
+    /**
+     * Đi qua nội dung ô soạn thảo.
+     * Các mẩu nằm cạnh nhau trên CÙNG một dòng (chữ thường + chữ đậm +
+     * link…) phải được gom lại rồi mới xuống dòng — nếu không, dòng đầu
+     * tiên (lúc người dùng chưa bấm Enter, trình duyệt chưa bọc <div>)
+     * sẽ bị cắt vụn thành nhiều dòng và mất luôn dấu định dạng.
+     */
     const duyet = (node) => {
+      let dem = '';
+      const xaDem = () => {
+        if (dem.trim()) themNhieuDong(dem, '');
+        dem = '';
+      };
+
       node.childNodes.forEach(n => {
-        if (n.nodeType === 3) {
-          const t = n.nodeValue.replace(/ /g, ' ');
-          if (t.trim()) dong.push(t.trim());
-          return;
-        }
+        if (n.nodeType === 3) { dem += n.nodeValue.replace(/\u00a0/g, ' '); return; }
         if (n.nodeType !== 1) return;
         const tag = n.tagName.toLowerCase();
 
         if (tag === 'ul') {
+          xaDem();
           n.querySelectorAll(':scope > li').forEach(li => dong.push('- ' + chuTrongDong(li).trim()));
           return;
         }
         if (tag === 'ol') {
+          xaDem();
           let i = 0;
           n.querySelectorAll(':scope > li').forEach(li => dong.push((++i) + '. ' + chuTrongDong(li).trim()));
           return;
         }
-        if (tag === 'blockquote') { themNhieuDong(chuTrongDong(n), '> '); return; }
-        if (/^h[1-6]$/.test(tag)) { dong.push('## ' + chuTrongDong(n).trim()); return; }
-        if (tag === 'br') { dong.push(''); return; }
+        if (tag === 'blockquote') { xaDem(); themNhieuDong(chuTrongDong(n), '> '); return; }
+        if (/^h[1-6]$/.test(tag))  { xaDem(); dong.push('## ' + chuTrongDong(n).trim()); return; }
+        if (tag === 'br')          { xaDem(); dong.push(''); return; }
 
         if (tag === 'div' || tag === 'p') {
+          xaDem();
           // Khối lồng nhau (trình duyệt hay bọc <div> quanh <ul>)
-          if (n.querySelector('ul,ol,blockquote,h1,h2,h3,h4,h5,h6,div,p')) { duyet(n); return; }
+          if (n.querySelector(KHOI)) { duyet(n); return; }
           themNhieuDong(chuTrongDong(n), '');
           return;
         }
-        const s = chuTrongDong(n);
-        if (s.trim()) themNhieuDong(s, '');
+        // Còn lại là mẩu nằm trong dòng: b, i, a, span, font…
+        dem += bocMot(n);
       });
+
+      xaDem();
     };
 
     duyet(root);
@@ -2782,11 +2909,9 @@ const App = {
     if (!text) return '';
     const esc = this._escHtml(String(text));
 
-    const trongDong = (s) => s
+    const trongDong = (s) => this._noiLink(s
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
-      .replace(/(https?:\/\/[^\s<]+)/g, u =>
-        `<a href="${u}" target="_blank" rel="noopener noreferrer" class="bf-link">${u}</a>`);
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>'));
 
     let html = '', ul = false, ol = false, td = false;
     const dongUl = (b) => { if (ul !== b) { html += b ? '<ul class="bf-ul">' : '</ul>'; ul = b; } };
