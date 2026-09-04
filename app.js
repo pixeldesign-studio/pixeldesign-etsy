@@ -343,7 +343,7 @@ const App = {
     const res = await fetch(url, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values })
+      body: JSON.stringify({ values: this._epNgayThanhChu(values) })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
@@ -357,7 +357,7 @@ const App = {
     const res = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values })
+      body: JSON.stringify({ values: this._epNgayThanhChu(values) })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
@@ -373,15 +373,85 @@ const App = {
    * Chuyển mảng 2 chiều từ Sheets API thành mảng object.
    * Hàng đầu tiên là tên cột.
    */
+  // ══════════════════════════════════════════════════════════
+  // NGÀY THÁNG ĐỌC/GHI VỚI GOOGLE SHEETS
+  // ──────────────────────────────────────────────────────────
+  // Google Sheets lưu ngày bên trong là một CON SỐ (số ngày kể từ
+  // 30/12/1899). Nếu ô ngày chưa khoá định dạng "văn bản thuần",
+  // Sheets sẽ đổi chuỗi app ghi xuống thành ngày thật, rồi hiện ra
+  // con số thô — ví dụ 03/09/2026 biến thành 46090.
+  //
+  // Lúc đó app tách chuỗi bằng dấu "/" sẽ ra "ngày không hợp lệ", và
+  // mọi phép so sánh với ngày không hợp lệ đều trả về false — nghĩa là
+  // bộ lọc kỳ báo cáo KHÔNG loại được dòng đó, nó lọt vào mọi kỳ.
+  //
+  // Chặn cả hai đầu: đọc lên gặp số thì đổi lại thành ngày; ghi xuống
+  // thì ép kiểu văn bản để Sheets không có cơ hội diễn giải.
+  // (Cùng bộ hàm này có ở cả 3 app — sửa thì sửa cả 3.)
+  // ══════════════════════════════════════════════════════════
+
+  /** Tên cột nào được coi là cột ngày. */
+  _laCotNgay(ten) {
+    const t = String(ten || '').toLowerCase();
+    return t === 'ngay' || t.startsWith('ngay_') || t.endsWith('_ngay')
+        || t === 'thoi_gian' || t.startsWith('thoi_gian_')
+        || t === 'deadline' || t === 'han_giao';
+  },
+
+  /**
+   * Đổi số của Sheets thành "dd/mm/yyyy" (kèm giờ nếu có phần lẻ).
+   * Không phải số ngày hợp lệ thì trả về nguyên xi.
+   * Khoảng nhận: 30000 (1982) đến 60000 (2064) — đủ rộng mà không
+   * đụng nhầm vào các con số khác.
+   */
+  _ngayTuSheet(giaTri) {
+    const chuoi = String(giaTri == null ? '' : giaTri).trim();
+    if (!/^\d{4,5}(\.\d+)?$/.test(chuoi)) return chuoi;
+    const so = parseFloat(chuoi);
+    if (!(so >= 30000 && so <= 60000)) return chuoi;
+
+    const nguyen = Math.floor(so);
+    const le = so - nguyen;
+    const moc = Date.UTC(1899, 11, 30);
+    const d = new Date(moc + nguyen * 86400000);
+    const hai = (n) => (n < 10 ? '0' : '') + n;
+    let ra = `${hai(d.getUTCDate())}/${hai(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+    if (le > 0.00001) {
+      const giay = Math.round(le * 86400);
+      ra += ` ${hai(Math.floor(giay / 3600) % 24)}:${hai(Math.floor(giay / 60) % 60)}`;
+    }
+    return ra;
+  },
+
+  /**
+   * Thêm dấu nháy đơn ở đầu chuỗi ngày để Sheets hiểu đây là VĂN BẢN.
+   * Dấu nháy này Sheets nuốt luôn, không hiện ra ô, đọc lại vẫn đúng
+   * "dd/mm/yyyy", copy sang Zalo vẫn sạch.
+   */
+  _epNgayThanhChu(values) {
+    const mau = /^\d{1,2}\/\d{1,2}\/\d{4}( \d{1,2}:\d{2}(:\d{2})?)?$/;
+    return (values || []).map(hang =>
+      (hang || []).map(o => (typeof o === 'string' && mau.test(o.trim())) ? "'" + o.trim() : o)
+    );
+  },
+
   _parseSheet(values) {
     if (!values || values.length < 1) return [];
     const headers = values[0];
     if (values.length < 2) return [];
     return values.slice(1).map(row => {
       const obj = {};
+      const soGoc = [];
       headers.forEach((h, i) => {
-        obj[h.trim()] = (row[i] !== undefined) ? String(row[i]).trim() : '';
+        const ten = String(h || '').trim();
+        let v = (row[i] !== undefined) ? String(row[i]).trim() : '';
+        if (v && this._laCotNgay(ten)) {
+          const doi = this._ngayTuSheet(v);
+          if (doi !== v) { soGoc.push(ten); v = doi; }
+        }
+        obj[ten] = v;
       });
+      if (soGoc.length) obj._ngayLaSo = soGoc;
       return obj;
     });
   },
