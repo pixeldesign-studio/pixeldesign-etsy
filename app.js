@@ -1056,7 +1056,9 @@ const App = {
       mimeType: 'application/vnd.google-apps.folder',
       parents: parentFolderId ? [parentFolderId] : []
     };
-    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+    // supportsAllDrives BẮT BUỘC phải có, nếu không Drive từ chối mọi
+    // thao tác ghi vào Drive dùng chung (báo 404 "File not found").
+    const res = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true&fields=id,name', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.session.accessToken}`,
@@ -1075,14 +1077,29 @@ const App = {
     form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
     form.append('file', file);
     
-    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,webViewLink', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${this.session.accessToken}` },
       body: form
     });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || `Upload Drive ${res.status}`); }
-    const data = await res.json();
-    return data.webViewLink || `https://drive.google.com/file/d/${data.id}/view`;
+    return res.json();
+  },
+
+  /**
+   * Mở quyền xem cho ai có link.
+   * Không có bước này thì ảnh chỉ hiện với người vừa upload; người
+   * khác mở popup ra chỉ thấy ô trống, vì trình duyệt của họ không
+   * tải nổi ảnh từ Drive. Thất bại thì bỏ qua — có thể quản trị viên
+   * Workspace đã chặn chia sẻ ra ngoài, lúc đó ảnh vẫn xem được
+   * trong nội bộ công ty.
+   */
+  async _moQuyenXemFile(fileId) {
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?supportsAllDrives=true`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${this.session.accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+    });
   },
 
   async _uploadAnhLenDrive(files, maDon) {
@@ -1097,7 +1114,9 @@ const App = {
         const file = files[i];
         try {
           this._setUploadProgress(10 + Math.round((i / files.length) * 85), `Đang upload (${i+1}/${files.length}): ${file.name}`);
-          const link = await this._uploadFileDrive(file, folderId);
+          const up = await this._uploadFileDrive(file, folderId);
+          await this._moQuyenXemFile(up.id).catch(() => {});
+          const link = `https://drive.google.com/file/d/${up.id}/view`;
           // Lưu kèm tên file theo dạng "url|tên" giống app Pixel, để danh
           // sách đính kèm hiện tên thật thay vì mã file Drive. Đơn cũ không
           // có phần tên vẫn đọc bình thường.
@@ -1110,9 +1129,14 @@ const App = {
       this._setUploadProgress(100, '✅ Upload hoàn tất!');
       return links;
     } catch (err) {
+      // Không nuốt lỗi: trước đây hàm này trả về mảng rỗng, đơn vẫn
+      // lưu bình thường và không ai biết ảnh đã bay mất.
       console.error('Lỗi upload:', err);
       this._setUploadProgress(0, 'Lỗi upload Drive');
-      return [];
+      const chiTiet = /not found|404/i.test(err.message || '')
+        ? 'Không vào được thư mục ETSY trên Drive dùng chung. Kiểm tra DRIVE_FOLDER_ID trong config.js và quyền của tài khoản đang đăng nhập.'
+        : (err.message || 'Lỗi không rõ');
+      throw new Error('Không upload được ảnh lên Drive. ' + chiTiet);
     }
   },
 
@@ -1181,7 +1205,10 @@ const App = {
       this._datLaiForm();
     } catch (err) {
       console.error('Lỗi khi lên đơn:', err);
-      this.showToast('Lỗi khi lên đơn, xem console', 'error');
+      // Dùng _showToast chứ không phải showToast: chỉ hàm này gắn đúng
+      // class .toast.error nên thông báo mới ra nền đỏ, và mới đặt được
+      // thời gian hiện lâu hơn để kịp đọc.
+      this._showToast(err.message || 'Lỗi khi lên đơn, xem console', 'error', 8000);
     } finally {
       this._isSubmittingDon = false;
       this._setLoadingState(btn, false, 'Lưu đơn hàng');
@@ -3785,7 +3812,16 @@ const App = {
 
     const prog = document.getElementById('upload-progress-container-chi-tiet');
     if (prog) prog.style.display = 'block';
-    const uploadedUrls = await this._uploadAnhLenDrive(this._uploadFilesMap?.['chi-tiet'] || [], maDon);
+    let uploadedUrls = [];
+    try {
+      uploadedUrls = await this._uploadAnhLenDrive(this._uploadFilesMap?.['chi-tiet'] || [], maDon);
+    } catch (e) {
+      // Upload hỏng thì dừng lại và trả nút về, đừng để nút quay mãi.
+      if (prog) prog.style.display = 'none';
+      if (btn) { btn.disabled = false; btn.innerHTML = 'Lưu thay đổi'; }
+      this._showToast(e.message || 'Không upload được ảnh lên Drive', 'error', 8000);
+      return;
+    }
     if (prog) prog.style.display = 'none';
 
     if (uploadedUrls.length > 0) {
