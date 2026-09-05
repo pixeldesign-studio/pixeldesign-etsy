@@ -2248,7 +2248,7 @@ const App = {
            draggable="${draggable}"
            ondragstart="App._onDragStart(event, '${this._escHtml(d.ma_don)}')"
            ondragend="App._onDragEnd(event)"
-           onclick="App._openCardDetail('${this._escHtml(d.ma_don)}')">
+           onclick="App._moTheDon('${this._escHtml(d.ma_don)}')">
         ${nutXoaHtml}
 
         <!-- Dòng phụ: MÃ ORDER ETSY là mã chính (đây là thứ tra trên sàn),
@@ -3485,12 +3485,35 @@ const App = {
   },
 
   // ── Card Detail Popup ─────────────────────────────────────────
-  _openCardDetail(maDon) {
-    const existing = document.getElementById('kb-detail-overlay');
-    if (existing) existing.remove();
+  /**
+   * Cửa vào duy nhất khi bấm một thẻ trên bảng.
+   * Có lớp bắt lỗi riêng vì trước đây bất kỳ trục trặc nào trong lúc
+   * dựng popup cũng chỉ làm... không có gì xảy ra. Người dùng ngồi
+   * bấm mãi mà không biết app đang hỏng ở đâu.
+   */
+  _moTheDon(maDon) {
+    try {
+      this._openCardDetail(maDon);
+    } catch (e) {
+      console.error('[Popup] Không mở được thẻ', maDon, e);
+      this._showToast(`Không mở được thẻ ${maDon}: ${e.message}`, 'error', 9000);
+    }
+  },
 
-    const don = this._kanbanData.find(d => d.ma_don === maDon);
-    if (!don) return;
+  _openCardDetail(maDon) {
+    // Dọn sạch mọi lớp phủ còn sót trước khi mở. Một lớp xem ảnh hay
+    // hộp xác nhận bị kẹt lại sẽ nằm đè lên bảng và nuốt hết mọi cú
+    // bấm — nhìn ra ngoài y như "bấm vào thẻ mà không có gì xảy ra".
+    document.getElementById('kb-detail-overlay')?.remove();
+    document.getElementById('lop-an-don')?.remove();
+    document.querySelectorAll('.xa-lop').forEach(el => el.remove());
+
+    const don = (this._kanbanData || []).find(d => d.ma_don === maDon);
+    if (!don) {
+      // Trước đây chỗ này lặng lẽ thoát ra, không ai biết vì sao.
+      this._showToast(`Không tìm thấy đơn ${maDon} trong dữ liệu đang có. Tải lại trang rồi thử lại.`, 'error', 7000);
+      return;
+    }
 
     const isDesigner  = this.session?.role === 'designer';
     const isSaleAdmin = !isDesigner; 
