@@ -2497,3 +2497,43 @@ details[open] .kb-collapse-summary::after {
   .xa-truoc { left: 6px; }
   .xa-sau   { right: 6px; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   Ô NỘI DUNG EMAIL TRẢ LỜI — CHẾ ĐỘ ĐỌC CÓ LINK BẤM ĐƯỢC
+   ──────────────────────────────────────────────────────────
+   Trong <textarea> thì link không bao giờ bấm được, đó là giới
+   hạn của chính loại ô. Nên mặc định hiện nội dung ở một khối
+   chữ thường (link bấm được), bấm "Sửa" mới đổi sang ô nhập.
+   ══════════════════════════════════════════════════════════ */
+.em-tieude {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.em-nut {
+  border: 1px solid var(--clr-border);
+  background: var(--clr-surface, #fff);
+  color: var(--clr-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.6;
+}
+.em-nut:hover { color: var(--clr-text); border-color: var(--clr-text-muted); }
+.em-hien {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--clr-text);
+  background: var(--clr-card, #fff);
+  border: 1px solid var(--clr-border-light, rgba(0,0,0,0.08));
+  border-radius: 10px;
+  padding: 12px 14px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.em-hien .bf-link { word-break: break-all; }
