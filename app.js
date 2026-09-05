@@ -504,7 +504,10 @@ const App = {
     } else {
       this.navigateTo('don-hang');
     }
-    this._showToast(`Chào mừng trở lại, ${name.split(' ').pop()}! 👋`, 'success');
+    // name có thể rỗng nếu hồ sơ Google thiếu tên — trước đây chỗ này
+    // ném lỗi ngay lúc đăng nhập, cắt đứt phần khởi động còn lại.
+    const tenGoi = String(name || '').trim().split(/\s+/).pop() || 'bạn';
+    this._showToast(`Chào mừng trở lại, ${tenGoi}! 👋`, 'success');
   },
 
   /**
@@ -2777,6 +2780,22 @@ const App = {
   // Chỗ nào có địa chỉ web thì tự biến thành link bấm được. Dùng
   // chung cho cả ô soạn thảo lẫn ô hiển thị, nên hai bên luôn giống
   // nhau. Dấu câu dính ở cuối (. , ) ...) bị đẩy ra ngoài link.
+
+  /**
+   * Văn bản thuần -> HTML an toàn, có link bấm được.
+   * Dùng cho phần Trao đổi trong popup đơn.
+   *
+   * Hàm này bị GỌI ở hai chỗ nhưng CHƯA HỀ ĐƯỢC ĐỊNH NGHĨA — nên bất
+   * kỳ đơn nào đã có ít nhất một dòng trao đổi đều làm hỏng popup,
+   * bấm vào thẻ không ra gì. Đơn chưa có trao đổi thì không sao, vì
+   * lúc đó nhánh này không chạy tới.
+   *
+   * Escape TRƯỚC rồi mới dựng thẻ <a>, nên nội dung nhân viên gõ vào
+   * không thể chèn mã lạ vào trang.
+   */
+  _linkifyText(vanBan) {
+    return this._noiLink(this._escHtml(String(vanBan == null ? '' : vanBan)));
+  },
 
   /** Đổi mọi địa chỉ web trong một đoạn HTML đã escape thành thẻ <a>. */
   _noiLink(html) {
