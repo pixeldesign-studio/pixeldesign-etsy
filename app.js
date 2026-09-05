@@ -3697,7 +3697,11 @@ const App = {
 
             <div class="kb-detail-section">
               <div class="kb-detail-section-title">Nội dung email trả lời</div>
-              <textarea class="form-textarea" id="det-noi-dung-email" rows="12" style="font-size:var(--font-size-sm);" ${isDesigner?'readonly':''}>${this._escHtml(don.noi_dung_email || '')}</textarea>
+              <textarea class="form-textarea" id="det-noi-dung-email" rows="12" style="font-size:var(--font-size-sm);">${this._escHtml(don.noi_dung_email || '')}</textarea>
+              ${isDesigner ? `
+              <div style="font-size:12px; color:var(--clr-text-muted); margin-top:6px; line-height:1.5;">
+                Dán link file hoàn thành vào ngay dưới dòng <b>Link to download:</b> rồi bấm Lưu thay đổi.
+              </div>` : ''}
             </div>
             
             <div class="kb-detail-section">
@@ -3807,7 +3811,7 @@ const App = {
         </div>
 
         <div class="kb-detail-footer">
-          ${isDesigner ? '' : `
+          ${`
           <button class="btn btn-primary" id="btn-save-detail" onclick="App._saveCardDetail('${this._escHtml(maDon)}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Lưu thay đổi
@@ -3833,7 +3837,12 @@ const App = {
 
     const isDesigner = this.session?.role === 'designer';
 
-    const patch = {
+    // Designer chỉ được ghi đúng hai thứ: nội dung email trả lời và
+    // file mình vừa tải lên. Không dựng lại cả dòng từ một biểu mẫu mà
+    // họ không sửa được, để tránh ghi đè lên thay đổi của sale.
+    const patch = isDesigner ? {
+      noi_dung_email: document.getElementById('det-noi-dung-email')?.value.trim(),
+    } : {
       ma_order_etsy:   document.getElementById('det-ma-order')?.value.trim(),
       buyer_name:      document.getElementById('det-buyer-name')?.value.trim(),
       buyer_email:     document.getElementById('det-buyer-email')?.value.trim(),
