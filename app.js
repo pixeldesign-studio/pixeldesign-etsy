@@ -2782,6 +2782,40 @@ const App = {
   // nhau. Dấu câu dính ở cuối (. , ) ...) bị đẩy ra ngoài link.
 
   /**
+   * Ô Nội dung email có hai chế độ.
+   *
+   * Mặc định là chế độ ĐỌC: nội dung hiện ra dạng chữ, mọi địa chỉ web
+   * thành link bấm được — mở thẻ ra là bấm thẳng vào link tải file để
+   * kiểm tra, không phải bôi đen rồi copy.
+   *
+   * Bấm "Sửa" mới đổi sang ô nhập. Giữ đúng một ô textarea ẩn phía sau
+   * làm nơi chứa dữ liệu thật, nên phần lưu xuống Sheets không đổi gì,
+   * và nội dung email được giữ nguyên từng ký tự — không đi qua bất kỳ
+   * phép đổi định dạng nào, vì đây là chữ sẽ gửi thẳng cho khách.
+   */
+  _doiCheDoEmail(batSua) {
+    const hien = document.getElementById('det-email-hien');
+    const soan = document.getElementById('det-noi-dung-email');
+    const nut  = document.getElementById('em-nut-sua');
+    if (!hien || !soan || !nut) return;
+
+    const dangSua = (batSua === undefined) ? (soan.style.display === 'none') : batSua;
+
+    if (dangSua) {
+      hien.style.display = 'none';
+      soan.style.display = '';
+      nut.textContent = 'Xong';
+      soan.focus();
+    } else {
+      soan.style.display = 'none';
+      hien.style.display = '';
+      hien.innerHTML = this._linkifyText(soan.value)
+        || '<span style="color:var(--clr-text-muted);">Chưa có nội dung</span>';
+      nut.textContent = 'Sửa';
+    }
+  },
+
+  /**
    * Văn bản thuần -> HTML an toàn, có link bấm được.
    * Dùng cho phần Trao đổi trong popup đơn.
    *
@@ -3696,11 +3730,15 @@ const App = {
             </details>
 
             <div class="kb-detail-section">
-              <div class="kb-detail-section-title">Nội dung email trả lời</div>
-              <textarea class="form-textarea" id="det-noi-dung-email" rows="12" style="font-size:var(--font-size-sm);">${this._escHtml(don.noi_dung_email || '')}</textarea>
+              <div class="kb-detail-section-title em-tieude">
+                <span>Nội dung email trả lời</span>
+                <button type="button" class="em-nut" id="em-nut-sua" onclick="App._doiCheDoEmail()">Sửa</button>
+              </div>
+              <div class="em-hien" id="det-email-hien">${this._linkifyText(don.noi_dung_email || '') || '<span style="color:var(--clr-text-muted);">Chưa có nội dung</span>'}</div>
+              <textarea class="form-textarea em-soan" id="det-noi-dung-email" rows="14" style="display:none; font-size:var(--font-size-sm);">${this._escHtml(don.noi_dung_email || '')}</textarea>
               ${isDesigner ? `
               <div style="font-size:12px; color:var(--clr-text-muted); margin-top:6px; line-height:1.5;">
-                Dán link file hoàn thành vào ngay dưới dòng <b>Link to download:</b> rồi bấm Lưu thay đổi.
+                Bấm <b>Sửa</b>, dán link file hoàn thành vào ngay dưới dòng <b>Link to download:</b>, rồi bấm Lưu thay đổi.
               </div>` : ''}
             </div>
             
