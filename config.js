@@ -22,6 +22,20 @@ const CONFIG = {
   SPREADSHEET_ID: '1XDzez-L2mw5jwlsoxtEUFtObrB-20vf9c5D3KEaoZ0Q',
 
   // ──────────────────────────────────────────────────────────
+  // NƠI CHỨA ẢNH ĐÍNH KÈM TRÊN GOOGLE DRIVE
+  // ──────────────────────────────────────────────────────────
+  // Thư mục "ETSY" nằm trong Drive dùng chung "ETSY CLIENTS".
+  // App tạo một thư mục con theo mã đơn ở đây rồi bỏ ảnh vào.
+  //
+  // BẮT BUỘC phải là thư mục trong DRIVE DÙNG CHUNG của công ty,
+  // không phải Drive cá nhân. Để trống thì Drive sẽ đặt ảnh vào
+  // gốc Drive cá nhân của người đang đăng nhập — nghỉ việc là mất.
+  //
+  // Đổi thư mục: mở thư mục đó trên Drive, lấy đoạn ID cuối URL
+  // https://drive.google.com/drive/folders/[ID]
+  DRIVE_FOLDER_ID: '1rnhUl0BzQwjjQ_6ie-Za57O7cRQ3CvmX',
+
+  // ──────────────────────────────────────────────────────────
   // GOOGLE API SCOPES
   // Quyền truy cập được yêu cầu khi đăng nhập
   // Mỗi khi thêm/bớt scope, tăng SCOPE_VERSION lên 1
