@@ -2537,3 +2537,7 @@ details[open] .kb-collapse-summary::after {
   overflow-y: auto;
 }
 .em-hien .bf-link { word-break: break-all; }
+
+/* Google Picker (cấp quyền thư mục ETSY) phải nằm TRÊN popup chi tiết đơn */
+.picker-dialog-bg { z-index: 10050 !important; }
+.picker-dialog    { z-index: 10051 !important; }
