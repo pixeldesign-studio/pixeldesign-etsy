@@ -36,6 +36,16 @@ const CONFIG = {
   DRIVE_FOLDER_ID: '1rnhUl0BzQwjjQ_6ie-Za57O7cRQ3CvmX',
 
   // ──────────────────────────────────────────────────────────
+  // GOOGLE PICKER — cửa sổ chọn thư mục ETSY (cấp quyền 1 lần)
+  // Khoá lấy ở console.cloud.google.com → Credentials → API key.
+  // Khoá PHẢI được giới hạn: Websites = https://etsy.pixeldesign.vn/*
+  // và API = chỉ Google Picker API (vì repo công khai).
+  // GOOGLE_APP_ID = mã số project (phần số đầu của CLIENT_ID).
+  // ──────────────────────────────────────────────────────────
+  PICKER_API_KEY: 'AIzaSyCJgknMrt25tmahUm2hgNMynKe4eC1tr9g',
+  GOOGLE_APP_ID: '692386348752',
+
+  // ──────────────────────────────────────────────────────────
   // GOOGLE API SCOPES
   // Quyền truy cập được yêu cầu khi đăng nhập
   // Mỗi khi thêm/bớt scope, tăng SCOPE_VERSION lên 1
