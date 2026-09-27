@@ -24,7 +24,8 @@ const CONFIG = {
   // ──────────────────────────────────────────────────────────
   // NƠI CHỨA ẢNH ĐÍNH KÈM TRÊN GOOGLE DRIVE
   // ──────────────────────────────────────────────────────────
-  // Thư mục "ETSY" nằm trong Drive dùng chung "ETSY CLIENTS".
+  // Thư mục "PHOTOS" nằm trong Drive dùng chung "ETSY - Clients"
+  // (đổi 27/09/2026 — thư mục ETSY cũ 1rnhUl0... đã bị xoá vào Thùng rác).
   // App tạo một thư mục con theo mã đơn ở đây rồi bỏ ảnh vào.
   //
   // BẮT BUỘC phải là thư mục trong DRIVE DÙNG CHUNG của công ty,
@@ -33,10 +34,11 @@ const CONFIG = {
   //
   // Đổi thư mục: mở thư mục đó trên Drive, lấy đoạn ID cuối URL
   // https://drive.google.com/drive/folders/[ID]
-  DRIVE_FOLDER_ID: '1rnhUl0BzQwjjQ_6ie-Za57O7cRQ3CvmX',
+  DRIVE_FOLDER_ID: '1SoPgOE-_gxDCkP8QUJEgYdUjvUZtiiaT',
+  DRIVE_FOLDER_NAME: 'PHOTOS',   // tên hiện trong thông báo và cửa sổ chọn thư mục
 
   // ──────────────────────────────────────────────────────────
-  // GOOGLE PICKER — cửa sổ chọn thư mục ETSY (cấp quyền 1 lần)
+  // GOOGLE PICKER — cửa sổ chọn thư mục ảnh (cấp quyền 1 lần)
   // Khoá lấy ở console.cloud.google.com → Credentials → API key.
   // Khoá PHẢI được giới hạn: Websites = https://etsy.pixeldesign.vn/*
   // và API = chỉ Google Picker API (vì repo công khai).
