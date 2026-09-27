@@ -1126,20 +1126,21 @@ const App = {
     const id = CONFIG.DRIVE_FOLDER_ID;
     if (!id || this._daCoQuyenThuMucEtsy) return;
     const P = 'Không upload được ảnh lên Drive. ';
+    const TEN = CONFIG.DRIVE_FOLDER_NAME || 'ảnh';
     let st = await this._kiemQuyenThuMuc(id);
     if (st === 200) { this._daCoQuyenThuMucEtsy = true; return; }
     if (st === 401) throw this._loiNguoiDung(P + 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
-    if (st !== 404) throw this._loiNguoiDung(P + `Không kiểm tra được thư mục ETSY (mã lỗi ${st}).`);
+    if (st !== 404) throw this._loiNguoiDung(P + `Không kiểm tra được thư mục ${TEN} (mã lỗi ${st}).`);
 
     // 404 = app chưa được cấp quyền thư mục ETSY → mở Picker
-    this._setUploadProgress(5, 'Cần cấp quyền thư mục ETSY (chỉ làm 1 lần)...');
-    this._showToast('Lần đầu upload: chọn thư mục ETSY rồi bấm Select. Chỉ làm 1 lần.', 'info', 6000);
+    this._setUploadProgress(5, `Cần cấp quyền thư mục ${TEN} (chỉ làm 1 lần)...`);
+    this._showToast(`Lần đầu upload: chọn thư mục ${TEN} rồi bấm Select. Chỉ làm 1 lần.`, 'info', 6000);
     const chon = await this._moPickerChonThuMucEtsy();
-    if (chon === null) throw this._loiNguoiDung(P + 'Bạn chưa chọn thư mục ETSY. Bấm Lưu lại và chọn thư mục ETSY để cấp quyền.');
-    if (chon !== id) throw this._loiNguoiDung(P + 'Bạn chọn nhầm thư mục. Bấm Lưu lại và chọn đúng thư mục tên ETSY.');
+    if (chon === null) throw this._loiNguoiDung(P + `Bạn chưa chọn thư mục ${TEN}. Bấm Lưu lại và chọn thư mục ${TEN} để cấp quyền.`);
+    if (chon !== id) throw this._loiNguoiDung(P + `Bạn chọn nhầm thư mục. Bấm Lưu lại và chọn đúng thư mục tên ${TEN}.`);
 
     st = await this._kiemQuyenThuMuc(id);
-    if (st !== 200) throw this._loiNguoiDung(P + `Đã chọn thư mục ETSY nhưng Google vẫn chưa cho truy cập (mã lỗi ${st}). Chụp màn hình gửi quản lý.`);
+    if (st !== 200) throw this._loiNguoiDung(P + `Đã chọn thư mục ${TEN} nhưng Google vẫn chưa cho truy cập (mã lỗi ${st}). Chụp màn hình gửi quản lý.`);
     this._daCoQuyenThuMucEtsy = true;
   },
 
@@ -1175,7 +1176,7 @@ const App = {
         .setIncludeFolders(true).setSelectFolderEnabled(true).setMimeTypes(MIME).setEnableDrives(true);
 
       const picker = new G.PickerBuilder()
-        .setTitle('Chọn thư mục ETSY rồi bấm Select (chỉ làm 1 lần)')
+        .setTitle(`Chọn thư mục ${CONFIG.DRIVE_FOLDER_NAME || 'ảnh'} rồi bấm Select (chỉ làm 1 lần)`)
         .addView(viewEtsy)
         .addView(viewDrive)
         .enableFeature(G.Feature.SUPPORT_DRIVES)
@@ -1231,7 +1232,7 @@ const App = {
       const chiTiet = /not found|404/i.test(msg)
         ? 'Google báo không thấy thư mục (404). Tải lại trang rồi thử lại; vẫn lỗi thì chụp màn hình gửi quản lý.'
         : /insufficient|permission|403/i.test(msg)
-          ? 'Tài khoản này chưa có quyền Người chỉnh sửa thư mục ETSY. Nhờ quản lý chia sẻ.'
+          ? `Tài khoản này chưa có quyền chỉnh sửa thư mục ${CONFIG.DRIVE_FOLDER_NAME || 'ảnh'}. Nhờ quản lý thêm vào Drive dùng chung.`
           : (msg || 'Lỗi không rõ');
       throw new Error('Không upload được ảnh lên Drive. ' + chiTiet);
     }
