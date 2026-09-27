@@ -1105,11 +1105,101 @@ const App = {
     });
   },
 
+  // ─────────────────────────────────────────────────────────────
+  // QUYỀN THƯ MỤC ETSY — Google Picker (thêm 27/09/2026)
+  // App xin quyền drive.file: chỉ thấy file/thư mục do app tạo hoặc do
+  // người dùng tự chọn qua Picker. Thư mục ETSY do người tạo tay nên app
+  // không thấy (Google trả 404). Mỗi người dùng chọn thư mục ETSY MỘT LẦN,
+  // Google nhớ quyền đó cho app, lần sau không hỏi nữa.
+  // ─────────────────────────────────────────────────────────────
+  _loiNguoiDung(text) { const e = new Error(text); e.nguoiDung = true; return e; },
+
+  async _kiemQuyenThuMuc(folderId) {
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?supportsAllDrives=true&fields=id,name`,
+      { headers: { Authorization: `Bearer ${this.session.accessToken}` } }
+    );
+    return res.status;
+  },
+
+  async _damBaoQuyenThuMucEtsy() {
+    const id = CONFIG.DRIVE_FOLDER_ID;
+    if (!id || this._daCoQuyenThuMucEtsy) return;
+    const P = 'Không upload được ảnh lên Drive. ';
+    let st = await this._kiemQuyenThuMuc(id);
+    if (st === 200) { this._daCoQuyenThuMucEtsy = true; return; }
+    if (st === 401) throw this._loiNguoiDung(P + 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+    if (st !== 404) throw this._loiNguoiDung(P + `Không kiểm tra được thư mục ETSY (mã lỗi ${st}).`);
+
+    // 404 = app chưa được cấp quyền thư mục ETSY → mở Picker
+    this._setUploadProgress(5, 'Cần cấp quyền thư mục ETSY (chỉ làm 1 lần)...');
+    this._showToast('Lần đầu upload: chọn thư mục ETSY rồi bấm Select. Chỉ làm 1 lần.', 'info', 6000);
+    const chon = await this._moPickerChonThuMucEtsy();
+    if (chon === null) throw this._loiNguoiDung(P + 'Bạn chưa chọn thư mục ETSY. Bấm Lưu lại và chọn thư mục ETSY để cấp quyền.');
+    if (chon !== id) throw this._loiNguoiDung(P + 'Bạn chọn nhầm thư mục. Bấm Lưu lại và chọn đúng thư mục tên ETSY.');
+
+    st = await this._kiemQuyenThuMuc(id);
+    if (st !== 200) throw this._loiNguoiDung(P + `Đã chọn thư mục ETSY nhưng Google vẫn chưa cho truy cập (mã lỗi ${st}). Chụp màn hình gửi quản lý.`);
+    this._daCoQuyenThuMucEtsy = true;
+  },
+
+  _napPickerApi() {
+    if (this._pickerSan) return this._pickerSan;
+    this._pickerSan = new Promise((resolve, reject) => {
+      const loi = () => { this._pickerSan = null; reject(this._loiNguoiDung('Không tải được cửa sổ chọn thư mục của Google. Kiểm tra mạng rồi thử lại.')); };
+      const nap = () => window.gapi.load('picker', { callback: resolve, onerror: loi });
+      if (window.gapi?.load) return nap();
+      const s = document.createElement('script');
+      s.src = 'https://apis.google.com/js/api.js';
+      s.onload = nap;
+      s.onerror = loi;
+      document.head.appendChild(s);
+    });
+    return this._pickerSan;
+  },
+
+  async _moPickerChonThuMucEtsy() {
+    if (!CONFIG.PICKER_API_KEY || !CONFIG.GOOGLE_APP_ID) {
+      throw this._loiNguoiDung('Không upload được ảnh lên Drive. Chưa khai PICKER_API_KEY trong config.js — báo quản lý.');
+    }
+    await this._napPickerApi();
+    return new Promise((resolve) => {
+      const G = google.picker;
+      const MIME = 'application/vnd.google-apps.folder';
+      // Tab 1: chỉ hiện đúng thư mục ETSY → bấm 1 cái là xong
+      const viewEtsy = new G.DocsView(G.ViewId.FOLDERS)
+        .setIncludeFolders(true).setSelectFolderEnabled(true).setMimeTypes(MIME);
+      if (typeof viewEtsy.setFileIds === 'function') viewEtsy.setFileIds(CONFIG.DRIVE_FOLDER_ID);
+      // Tab 2 (dự phòng): duyệt Drive dùng chung để tự tìm thư mục ETSY
+      const viewDrive = new G.DocsView(G.ViewId.FOLDERS)
+        .setIncludeFolders(true).setSelectFolderEnabled(true).setMimeTypes(MIME).setEnableDrives(true);
+
+      const picker = new G.PickerBuilder()
+        .setTitle('Chọn thư mục ETSY rồi bấm Select (chỉ làm 1 lần)')
+        .addView(viewEtsy)
+        .addView(viewDrive)
+        .enableFeature(G.Feature.SUPPORT_DRIVES)
+        .setOAuthToken(this.session.accessToken)
+        .setDeveloperKey(CONFIG.PICKER_API_KEY)
+        .setAppId(CONFIG.GOOGLE_APP_ID)   // BẮT BUỘC: thiếu thì chọn xong app vẫn không có quyền
+        .setCallback((data) => {
+          const a = data[G.Response.ACTION];
+          if (a === G.Action.PICKED) resolve(data[G.Response.DOCUMENTS]?.[0]?.[G.Document.ID] || null);
+          else if (a === G.Action.CANCEL) resolve(null);
+        })
+        .build();
+      picker.setVisible(true);
+    });
+  },
+
   async _uploadAnhLenDrive(files, maDon) {
     if (!files || files.length === 0) return [];
     try {
       this._setUploadProgress(5, `Đang tạo thư mục ${maDon} trên Drive...`);
       const parentId = CONFIG.DRIVE_FOLDER_ID;
+      // Quyền drive.file chỉ thấy thư mục app tạo hoặc người dùng tự chọn.
+      // Thư mục ETSY do người tạo tay → phải cho người dùng chọn 1 lần qua Picker.
+      await this._damBaoQuyenThuMucEtsy();
       const folderId = await this._createDriveFolder(maDon, parentId);
       
       let links = [];
@@ -1136,9 +1226,13 @@ const App = {
       // lưu bình thường và không ai biết ảnh đã bay mất.
       console.error('Lỗi upload:', err);
       this._setUploadProgress(0, 'Lỗi upload Drive');
-      const chiTiet = /not found|404/i.test(err.message || '')
-        ? 'Không vào được thư mục ETSY trên Drive dùng chung. Kiểm tra DRIVE_FOLDER_ID trong config.js và quyền của tài khoản đang đăng nhập.'
-        : (err.message || 'Lỗi không rõ');
+      if (err.nguoiDung) throw err;   // thông báo đã viết sẵn cho người dùng
+      const msg = err.message || '';
+      const chiTiet = /not found|404/i.test(msg)
+        ? 'Google báo không thấy thư mục (404). Tải lại trang rồi thử lại; vẫn lỗi thì chụp màn hình gửi quản lý.'
+        : /insufficient|permission|403/i.test(msg)
+          ? 'Tài khoản này chưa có quyền Người chỉnh sửa thư mục ETSY. Nhờ quản lý chia sẻ.'
+          : (msg || 'Lỗi không rõ');
       throw new Error('Không upload được ảnh lên Drive. ' + chiTiet);
     }
   },
