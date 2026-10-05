@@ -28,6 +28,9 @@ const App = {
 
   init() {
     this.session = this._loadSession();
+
+    // [iPhone - 05/10] Vua quay ve tu trang Google (dang nhap kieu chuyen trang)?
+    if (this._xuLyKetQuaChuyenTrang()) return;
     // Kiểm tra session còn hạn VÀ đúng scope version
     // Nếu scopes đã thay đổi (SCOPE_VERSION tăng), buộc đăng nhập lại
     // để lấy token mới với đủ quyền truy cập
@@ -40,6 +43,14 @@ const App = {
     } else {
       if (this.session && !scopeOk) {
         console.log(`[Auth] Scope version cũ (${this.session?.scopeVersion}) < hiện tại (${CONFIG.SCOPE_VERSION}). Xoá session, yêu cầu đăng nhập lại.`);
+      }
+      // [iPhone - 05/10] Da tung dang nhap, chi het han -> tu gia han im lang
+      // bang chuyen trang (khong can bam nut).
+      if (this._laAppIPhone() && (this.session?.email || this.session?.profile?.email) && scopeOk) {
+        this._showLogin();
+        this._setLoginLoading('Đang kết nối lại...');
+        this._chuyenTrangDangNhap(true);
+        return;
       }
       this._clearSession();
       this._showLogin();
@@ -126,6 +137,13 @@ const App = {
   },
 
   signIn() {
+    // [iPhone - 05/10] App mo tu man hinh chinh: KHONG dung cua so bat len
+    if (this._laAppIPhone()) {
+      this._hideLoginError();
+      this._setLoginLoading('Đang mở Google...');
+      this._chuyenTrangDangNhap(false);
+      return;
+    }
     if (!this.tokenClient) {
       // GSI script chưa load xong, thử khởi tạo lại
       this._initGoogleTokenClient();
@@ -626,6 +644,104 @@ const App = {
     this.session = null;
   },
 
+  // ──────────────────────────────────────────────────────────
+  // [05/10] DANG NHAP KIEU CHUYEN TRANG — chi dung cho app mo tu
+  // man hinh chinh iPhone/iPad (cua so Google bat len khong bao duoc
+  // ket qua ve -> phai bam 2-3 lan). Giong app TONG lan 12 va CRM.
+  // May tinh/Android van dung cach cu.
+  // CAN: https://etsy.pixeldesign.vn co trong "Authorized redirect URIs".
+  // ──────────────────────────────────────────────────────────
+
+  _laAppIPhone() {
+    try {
+      if (window.navigator.standalone === true) return true;
+      const laIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      return laIOS && window.matchMedia('(display-mode: standalone)').matches;
+    } catch (e) { return false; }
+  },
+
+  _diaChiQuayVe() {
+    // Khop dung dong da khai tren Google Cloud: https://etsy.pixeldesign.vn
+    return window.location.origin;
+  },
+
+  _chuyenTrangDangNhap(imLang, trangGiuLai) {
+    if (trangGiuLai === undefined) {
+      const appDangMo = !document.getElementById('app-shell')?.classList.contains('hidden');
+      trangGiuLai = appDangMo ? (this.currentPage || null) : null;
+    }
+    const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    try {
+      localStorage.setItem('pixeldesign_oauth_cho', JSON.stringify({
+        state, imLang: !!imLang, trang: trangGiuLai || null, luc: Date.now(),
+      }));
+    } catch (e) {}
+    const cu = this.session || this._loadSession();
+    const goiY = cu?.email || cu?.profile?.email || '';
+    const thamSo = {
+      client_id:     CONFIG.CLIENT_ID,
+      redirect_uri:  this._diaChiQuayVe(),
+      response_type: 'token',
+      scope:         CONFIG.SCOPES,
+      include_granted_scopes: 'true',
+      state,
+    };
+    if (goiY)   thamSo.login_hint = goiY;
+    if (imLang) thamSo.prompt = 'none';
+    const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams(thamSo).toString();
+    console.log('[Auth] Chuyển trang sang Google', imLang ? '(im lặng)' : '(có giao diện)');
+    window.location.assign(url);
+  },
+
+  _xuLyKetQuaChuyenTrang() {
+    const hash = window.location.hash || '';
+    if (!/[#&](access_token|error)=/.test(hash)) return false;
+
+    const ts = new URLSearchParams(hash.slice(1));
+    try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+
+    let cho = null;
+    try { cho = JSON.parse(localStorage.getItem('pixeldesign_oauth_cho') || 'null'); } catch (e) {}
+    try { localStorage.removeItem('pixeldesign_oauth_cho'); } catch (e) {}
+
+    if (!cho || cho.state !== ts.get('state')) {
+      console.warn('[Auth] Kết quả Google không khớp lượt đăng nhập, bỏ qua.');
+      return false;
+    }
+
+    const loi = ts.get('error');
+    if (loi) {
+      if (cho.imLang && ['interaction_required', 'login_required', 'consent_required', 'account_selection_required'].includes(loi)) {
+        this._showLogin();
+        this._setLoginLoading('Đang mở Google...');
+        this._chuyenTrangDangNhap(false, cho.trang || null);
+        return true;
+      }
+      this._clearSession();
+      this._showLogin();
+      this._resetLoginButton();
+      const thongBao = { access_denied: 'Bạn đã từ chối quyền truy cập.' };
+      this._showLoginError(thongBao[loi] || `Lỗi đăng nhập: ${loi}`);
+      return true;
+    }
+
+    // Co token -> luu phien giong het nhanh dang nhap cu (callback cua token client)
+    const hanToken = Date.now() + ((parseInt(ts.get('expires_in')) || 3600) * 1000);
+    this.session = {
+      ...(this.session || {}),
+      accessToken:  ts.get('access_token'),
+      expiresAt:    hanToken,
+      tokenExpiry:  hanToken,
+      version:      CONFIG.SCOPE_VERSION,
+      scopeVersion: CONFIG.SCOPE_VERSION
+    };
+    try { localStorage.setItem('pixeldesign_session', JSON.stringify(this.session)); } catch (e) {}
+    if (cho.trang) this.currentPage = cho.trang;
+    this._batDauGiuPhien();
+    this._checkSession();
+    return true;
+  },
+
   _isTokenExpired() {
     // Chap nhan ca hai ten truong: ban cu luu expiresAt, ban moi luu tokenExpiry
     const han = this.session?.tokenExpiry || this.session?.expiresAt;
@@ -639,6 +755,8 @@ const App = {
 
   async _lamMoiPhienNgam(imLang = true) {
     if (this._huaLamMoi) return this._huaLamMoi;
+    // [iPhone - 05/10] Cua so Google khong bao ket qua ve duoc -> that bai ngay
+    if (this._laAppIPhone()) return false;
 
     this._huaLamMoi = new Promise((resolve) => {
       if (!this.tokenClient) this._initGoogleTokenClient();
@@ -716,6 +834,11 @@ const App = {
   async _dangNhapLaiTaiCho() {
     const nut  = document.getElementById('nut-dang-nhap-lai');
     const oLoi = document.getElementById('loi-dang-nhap-lai');
+    if (this._laAppIPhone()) {
+      if (nut) { nut.disabled = true; nut.textContent = 'Đang mở Google...'; }
+      this._chuyenTrangDangNhap(true);
+      return;
+    }
     // Huy lan cho cu (neu co) de moi lan cham la mot lan thu MOI thuc su,
     // khong bi ket vao lan cho truoc do.
     if (this._dangLamMoiNgam) {
