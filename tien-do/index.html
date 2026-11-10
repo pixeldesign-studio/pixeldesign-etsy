@@ -191,29 +191,37 @@ let toastT;
 function toast(msg, kind) { const t = $('toast'); t.textContent = msg; t.className = 'toast ' + (kind || ''); t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200); }
 
 /* ---------- Đăng nhập Google ---------- */
-const S = {token: null, exp: 0, email: '', rows: [], open: new Set(), tokenClient: null};
-function luuPhien() { try { sessionStorage.setItem('jtd', JSON.stringify({token: S.token, exp: S.exp, email: S.email})); } catch (e) {} }
-function docPhien() { try { const p = JSON.parse(sessionStorage.getItem('jtd') || 'null'); if (p && p.exp > Date.now() + 60000) { S.token = p.token; S.exp = p.exp; S.email = p.email; return true; } } catch (e) {} return false; }
-function xoaPhien() { S.token = null; S.exp = 0; try { sessionStorage.removeItem('jtd'); } catch (e) {} }
+const S = {token: null, exp: 0, email: '', rows: [], open: new Set(), tokenClient: null, hen: 0, tuDong: false};
+// Nhớ đăng nhập trên máy này (localStorage): mở web là vào thẳng; hết hạn thì tự lấy lại
+function luuPhien() { try { localStorage.setItem('jtd', JSON.stringify({token: S.token, exp: S.exp, email: S.email})); } catch (e) {} }
+function docPhien() { try { const p = JSON.parse(localStorage.getItem('jtd') || 'null'); if (p) { S.email = p.email || ''; if (p.exp > Date.now() + 60000) { S.token = p.token; S.exp = p.exp; return true; } } } catch (e) {} return false; }
+function xoaPhien(quen) { S.token = null; S.exp = 0; clearTimeout(S.hen); try { if (quen) { localStorage.removeItem('jtd'); S.email = ''; } else luuPhien(); } catch (e) {} }
+function henLamMoi() { clearTimeout(S.hen); S.hen = setTimeout(() => lamMoi(), Math.max(10000, S.exp - Date.now() - 5 * 60000)); }
+function lamMoi() { if (!S.tokenClient && !khoiTaoGoogle()) { setTimeout(lamMoi, 800); return; } S.tuDong = true; S.tokenClient.requestAccessToken({prompt: '', login_hint: S.email}); }
+function hienNutTiepTuc() { $('btn-login').textContent = S.email ? 'Tiếp tục với ' + S.email : 'Đăng nhập Google'; }
 
 function khoiTaoGoogle() {
   if (!window.google || !google.accounts || !google.accounts.oauth2) return false;
   S.tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CONFIG.CLIENT_ID, scope: CONFIG.SCOPES,
+    error_callback: () => { if (S.tuDong) { S.tuDong = false; if (!S.token) { $('login-msg').textContent = 'Trình duyệt chặn cửa sổ tự đăng nhập. Bấm nút 1 lần (hoặc cho phép cửa sổ bật lên cho trang này để lần sau tự vào).'; hienNutTiepTuc(); } } },
     callback: async (r) => {
-      if (r.error) { $('login-msg').textContent = 'Không đăng nhập được: ' + r.error; return; }
+      const tuDong = S.tuDong; S.tuDong = false;
+      if (r.error) { if (!S.token) { $('login-msg').textContent = tuDong ? '' : 'Không đăng nhập được: ' + r.error; hienNutTiepTuc(); } return; }
       S.token = r.access_token; S.exp = Date.now() + (Number(r.expires_in) || 3500) * 1000;
       try { const u = await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {headers: {Authorization: 'Bearer ' + S.token}})).json(); S.email = u.email || ''; } catch (e) {}
-      luuPhien(); vaoApp();
+      luuPhien(); henLamMoi();
+      if ($('app').hidden) vaoApp();
     }
   });
   return true;
 }
 function dangNhap() {
   if (!S.tokenClient && !khoiTaoGoogle()) { $('login-msg').textContent = 'Chưa tải được Google, thử lại sau vài giây.'; return; }
-  S.tokenClient.requestAccessToken(S.email ? {prompt: '', hint: S.email} : {});
+  S.tuDong = false;
+  S.tokenClient.requestAccessToken(S.email ? {prompt: '', login_hint: S.email} : {prompt: 'select_account'});
 }
-function raNgoai() { xoaPhien(); $('app').hidden = true; $('tools').hidden = true; $('login').hidden = false; }
+function raNgoai(quen) { xoaPhien(quen); $('app').hidden = true; $('tools').hidden = true; $('login').hidden = false; hienNutTiepTuc(); }
 function vaoApp() { $('login').hidden = true; $('app').hidden = false; $('tools').hidden = false; $('user').textContent = S.email; tai(); }
 
 /* ---------- Google Sheets ---------- */
@@ -221,9 +229,9 @@ async function api(path, opt) {
   const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/${path}`, {
     ...opt, headers: {Authorization: 'Bearer ' + S.token, 'Content-Type': 'application/json'}
   });
-  if (r.status === 401) { raNgoai(); throw new Error('Phiên đăng nhập hết hạn, đăng nhập lại.'); }
-  if (r.status === 403) throw new Error('Tài khoản này không có quyền (chỉ xem hoặc chưa được chia sẻ file).');
-  if (r.status === 404) throw new Error('Không thấy file tiến độ, hoặc tài khoản chưa được chia sẻ.');
+  if (r.status === 401) { raNgoai(false); lamMoi(); throw new Error('Phiên đăng nhập hết hạn, đang tự đăng nhập lại.'); }
+  if (r.status === 403) throw new Error('Tài khoản ' + S.email + ' không có quyền (chỉ xem hoặc chưa được chia sẻ file). Đăng xuất rồi vào bằng tài khoản khác.');
+  if (r.status === 404) throw new Error('Tài khoản ' + S.email + ' chưa được chia sẻ file tiến độ. Đăng xuất rồi vào bằng tài khoản khác.');
   if (!r.ok) throw new Error('Lỗi Google Sheets ' + r.status);
   return r.json();
 }
@@ -379,13 +387,14 @@ async function themMa() {
 }
 
 $('btn-login').onclick = dangNhap;
-$('btn-out').onclick = raNgoai;
+$('btn-out').onclick = () => raNgoai(true);
 $('btn-reload').onclick = tai;
 $('show-done').onchange = ve;
 $('btn-add').onclick = () => { $('add-panel').hidden = !$('add-panel').hidden; if (!$('add-panel').hidden) $('a-ma').focus(); };
 $('a-cancel').onclick = () => { $('add-panel').hidden = true; };
 $('a-save').onclick = themMa;
-if (docPhien()) vaoApp();
+if (docPhien()) { vaoApp(); henLamMoi(); }
+else if (S.email) { hienNutTiepTuc(); $('login-msg').textContent = 'Đang tự đăng nhập ' + S.email + '…'; window.addEventListener('load', () => setTimeout(lamMoi, 300)); }
 </script>
 </body>
 </html>
