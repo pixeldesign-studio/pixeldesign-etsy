@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a11">
+<title>Tiến độ mã · Jolie Poster 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#0b0a11;--card:rgba(255,255,255,.035);--card2:rgba(255,255,255,.06);--line:rgba(255,255,255,.08);
+  --fg:#f5f4fa;--mute:#8f8ca3;--dim:#5d5a70;--acc:#8b5cf6;--acc2:#b79bff;--warn:#f6b84b;--bad:#ff6b7d;--ok:#4ade80;
+  --thien:#a78bfa;--may:#38bdf8;--hoa:#f472b6;--hai:#fbbf24;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px}
+[hidden]{display:none!important}
+.jx{position:relative;overflow:hidden;min-height:100vh;max-width:1180px;margin:0 auto;
+  padding:28px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:22px}
+.jx::before{content:"";position:absolute;inset:-180px -120px auto auto;width:560px;height:560px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(139,92,246,.30),rgba(139,92,246,0));pointer-events:none}
+.jx > *{position:relative}
+.jx-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.jx-title{margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.jx-sub{font-size:12px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.jx-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.jx-user{font-size:12px;color:var(--mute)}
+button,select,input{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.1)}
+.btn.pri{border:0;color:#fff;font-weight:600;background:linear-gradient(135deg,#7c4dff,#a78bfa);box-shadow:0 4px 16px rgba(124,77,255,.35)}
+.btn.warn{border-color:rgba(246,184,75,.5);color:var(--warn)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+
+.jx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.jx-stat{background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:18px;padding:16px 18px;position:relative;overflow:hidden}
+.jx-stat::after{content:"";position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(closest-side,var(--glow,rgba(139,92,246,.45)),transparent)}
+.jx-stat.w{--glow:rgba(246,184,75,.35)} .jx-stat.b{--glow:rgba(255,107,125,.35)}
+.jx-lbl{font-size:12px;color:var(--mute)}
+.jx-num{font-size:34px;font-weight:600;line-height:1.1;margin-top:6px;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+
+.jx-panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 0}
+.jx-head,.jx-row{display:grid;grid-template-columns:minmax(130px,1.1fr) minmax(200px,2.4fr) minmax(96px,.8fr) minmax(70px,.6fr) 64px;gap:16px;align-items:center;padding:0 20px}
+.jx-head{font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;height:38px}
+.jx-item{border-top:1px solid var(--line)}
+.jx-row{padding-block:14px;cursor:pointer;list-style:none}
+.jx-row::-webkit-details-marker{display:none}
+.jx-item[open] > .jx-row,.jx-row:hover{background:rgba(255,255,255,.025)}
+.jx-row > *{min-width:0}
+.jx-code{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.jx-chev{width:18px;height:18px;flex:none;border-radius:50%;display:inline-grid;place-items:center;background:var(--card2);border:1px solid var(--line)}
+.jx-chev::before{content:"";width:5px;height:5px;border-right:1.5px solid var(--acc2);border-bottom:1.5px solid var(--acc2);transform:rotate(-45deg) translate(-1px,-1px)}
+.jx-item[open] .jx-chev::before{transform:rotate(45deg) translate(-1px,-1px)}
+.jx-name{font-size:12px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jx-flag{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;color:#1a1305;background:var(--warn);box-shadow:0 0 14px rgba(246,184,75,.45)}
+.jx-flag.bad{background:var(--bad);color:#22060a;box-shadow:0 0 14px rgba(255,107,125,.45)}
+.jx-flag.ok{background:var(--ok);color:#04220f;box-shadow:none}
+.jx-seg{display:flex;gap:3px}
+.jx-seg i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.09)}
+.jx-seg i.on{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.jx-seg i.now{background:#fff;box-shadow:0 0 10px 2px rgba(183,155,255,.9)}
+.jx-step{font-size:13px;color:var(--mute);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jx-step b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.jx-who{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--line);max-width:100%;white-space:nowrap}
+.jx-dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 8px var(--c)}
+.jx-wait{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.jx-wait b{color:var(--fg);font-weight:600}
+.jx-wait.long b{color:var(--bad)}
+.jx-open{display:flex;width:64px;justify-content:center;font-size:12px;font-weight:600;color:#fff;text-decoration:none;padding:6px 0;border-radius:999px;background:linear-gradient(135deg,#7c4dff,#a78bfa);box-shadow:0 4px 16px rgba(124,77,255,.35)}
+.jx-msg{padding:28px 20px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+
+.jx-detail{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:4px 20px 20px}
+.jx-full{grid-column:1/-1;font-size:13px;color:var(--mute);overflow-wrap:anywhere}
+.jx-col{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.jx-col h3{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.jx-col h3 span{color:var(--fg);margin-left:6px}
+.jx-st{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;font-size:13px;color:var(--mute)}
+.jx-st .n{font-variant-numeric:tabular-nums;color:var(--dim);text-align:right}
+.jx-st.now{color:var(--fg)} .jx-st.now .n{color:var(--acc2);font-weight:600}
+.jx-st.now .t::after{content:"Đang làm";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--acc2)}
+.jx-st.done .n{color:var(--acc2)}
+.jx-st .jx-who{font-size:12px;padding:2px 8px}
+.jx-st.done .jx-who,.jx-st.next .jx-who{opacity:.7}
+.jx-none{font-size:13px;color:var(--dim);margin:0}
+
+.jx-edit{grid-column:1/-1;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.07);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.jx-edit h3{margin:0;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2)}
+.jx-quick{display:flex;gap:8px;flex-wrap:wrap}
+.jx-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mute);min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld select,.fld input[type=text]{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;width:100%}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg);padding:8px 0}
+.chk input{width:16px;height:16px;accent-color:var(--acc)}
+
+.jx-login{margin:12vh auto 0;max-width:380px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.jx-login p{margin:0;color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1b1926;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:calc(100vw - 32px);z-index:20}
+.toast.bad{border-color:var(--bad)} .toast.ok{border-color:var(--ok)}
+@media (max-width:720px){
+  .jx-head{display:none}
+  .jx-row{grid-template-columns:1fr auto;gap:10px 12px}
+  .jx-row > .c2{grid-column:1/-1;order:3}
+  .jx-row > .c4{order:4}
+  .jx-row > .c5{order:5;justify-self:end}
+  .jx-num{font-size:26px} .jx-stat{padding:12px 14px}
+  .jx-detail{grid-template-columns:1fr;padding-inline:14px}
+}
+</style>
+</head>
+<body>
+<div class="jx">
+  <div class="jx-top">
+    <div>
+      <h1 class="jx-title">Tiến độ mã</h1>
+      <div class="jx-sub">Jolie Poster 2027</div>
+    </div>
+    <div class="jx-tools" id="tools" hidden>
+      <span class="jx-user" id="user"></span>
+      <label class="chk" style="padding:0;font-size:12px;color:var(--mute)"><input type="checkbox" id="show-done"> Hiện mã đã xong</label>
+      <button class="btn" id="btn-reload" type="button">Tải lại</button>
+      <button class="btn pri" id="btn-add" type="button">+ Thêm mã</button>
+      <button class="btn" id="btn-out" type="button">Đăng xuất</button>
+    </div>
+  </div>
+
+  <div class="jx-login" id="login">
+    <p>Đăng nhập bằng tài khoản Google đã được chia sẻ file tiến độ.</p>
+    <button class="btn pri" id="btn-login" type="button">Đăng nhập Google</button>
+    <p id="login-msg" style="font-size:12px"></p>
+  </div>
+
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:22px">
+    <div class="jx-stats">
+      <div class="jx-stat"><div class="jx-lbl">Đang chạy</div><div class="jx-num" id="n-run">—</div></div>
+      <div class="jx-stat w"><div class="jx-lbl">Chờ anh</div><div class="jx-num" id="n-need">—</div></div>
+      <div class="jx-stat b"><div class="jx-lbl">Kẹt</div><div class="jx-num" id="n-stuck">—</div></div>
+    </div>
+
+    <div class="jx-panel" id="add-panel" hidden style="padding:16px 20px">
+      <div class="jx-edit" style="border:0;background:none;padding:0">
+        <h3>Thêm mã mới</h3>
+        <div class="jx-fields">
+          <label class="fld" for="a-ma">Mã (vd J05)<input type="text" id="a-ma" autocomplete="off"></label>
+          <label class="fld" for="a-ten">Tên mẫu<input type="text" id="a-ten" autocomplete="off"></label>
+          <label class="fld" for="a-nuoc">Nước<input type="text" id="a-nuoc" value="USA" autocomplete="off"></label>
+          <label class="fld" for="a-ban">Bản<select id="a-ban"><option>CT</option><option>CV</option></select></label>
+          <label class="fld wide" for="a-link">Link thread Google Chat (không bắt buộc)<input type="text" id="a-link" autocomplete="off"></label>
+        </div>
+        <div class="jx-quick"><button class="btn pri" id="a-save" type="button">Thêm vào bảng</button><button class="btn" id="a-cancel" type="button">Huỷ</button></div>
+      </div>
+    </div>
+
+    <div class="jx-panel">
+      <div class="jx-head"><span>Mã</span><span>Bước</span><span>Người giữ</span><span>Chờ</span><span></span></div>
+      <div id="rows"><div class="jx-msg">Đang tải…</div></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const CONFIG = {
+  CLIENT_ID: '692386348752-9h282jk67080lc2p6al3uqiqtci45em8.apps.googleusercontent.com',
+  SHEET_ID: '1sEYEifE9TfAaOELqwxDXfAON4J_NvY6y33serMxt7zc',
+  TAB: 'TIEN_DO_MA', LOG: 'LICH_SU',
+  SCOPES: 'https://www.googleapis.com/auth/spreadsheets email'
+};
+const COLS = ['ma_ban','ma','ten_mau','nuoc','ban','buoc','tong_buoc','ten_buoc','nguoi_giu','vao_buoc_luc','can_anh','trang_thai','link_thread','ghi_chu','cap_nhat'];
+const NGUOI = ['Thiện','Máy','Anh Hòa','Anh Hải','Thiện + Máy','Thiện + Anh Hòa'];
+
+// Quy trình anh Hải chốt 10/11/2026
+const CHUNG = [['Anh Hải','Gửi mẫu cho Thiện'],['Thiện','Tối ưu mẫu, up file gốc'],['Máy','Đổ thử 1 năm bất kỳ'],['Thiện','Check năm đổ thử'],['Thiện + Máy','Thiện duyệt, máy đổ full 19 năm'],['Máy','Kiểm tra chéo 19 năm']];
+const BUOC = {
+  CT: [...CHUNG,['Thiện','Sửa lỗi nhỏ, up final, JPEG, file listing'],['Máy','Vẽ bối cảnh 19 năm'],['Thiện','Xoá watermark bối cảnh, up đủ file'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Thiện','Báo anh Hải sang đăng bài']],
+  CV: [...CHUNG,['Máy','Soạn file txt 19 khách'],['Thiện','Sửa lỗi nhỏ, up final, file listing, PDF Canva'],['Máy','Vẽ bối cảnh 19 năm'],['Anh Hòa','Điền Canva, resize 3 size, xuất hình'],['Thiện','Xoá watermark bối cảnh'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Máy','Xuất PDF tài liệu bàn giao'],['Thiện','Check tài liệu bàn giao'],['Thiện','Báo anh Hải sang đăng bài']]
+};
+const SONG = {CT:{7:8}, CV:{8:9,10:11}};
+// Bước có nhánh: [nhãn nút, bước tới]
+const NHANH = {
+  CT: {11:[['Listing OK → bước 15',15],['Có lỗi → bước 12',12]], 14:[['OK → bước 15',15],['Còn lỗi → bước 12',12]]},
+  CV: {13:[['Listing OK → bước 17',17],['Có lỗi → bước 14',14]], 16:[['OK → bước 17',17],['Còn lỗi → bước 14',14]]}
+};
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const pad = (n) => String(n).padStart(2, '0');
+const bayGio = () => { const d = new Date(); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+let toastT;
+function toast(msg, kind) { const t = $('toast'); t.textContent = msg; t.className = 'toast ' + (kind || ''); t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200); }
+
+/* ---------- Đăng nhập Google ---------- */
+const S = {token: null, exp: 0, email: '', rows: [], open: new Set(), tokenClient: null};
+function luuPhien() { try { sessionStorage.setItem('jtd', JSON.stringify({token: S.token, exp: S.exp, email: S.email})); } catch (e) {} }
+function docPhien() { try { const p = JSON.parse(sessionStorage.getItem('jtd') || 'null'); if (p && p.exp > Date.now() + 60000) { S.token = p.token; S.exp = p.exp; S.email = p.email; return true; } } catch (e) {} return false; }
+function xoaPhien() { S.token = null; S.exp = 0; try { sessionStorage.removeItem('jtd'); } catch (e) {} }
+
+function khoiTaoGoogle() {
+  if (!window.google || !google.accounts || !google.accounts.oauth2) return false;
+  S.tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.CLIENT_ID, scope: CONFIG.SCOPES,
+    callback: async (r) => {
+      if (r.error) { $('login-msg').textContent = 'Không đăng nhập được: ' + r.error; return; }
+      S.token = r.access_token; S.exp = Date.now() + (Number(r.expires_in) || 3500) * 1000;
+      try { const u = await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {headers: {Authorization: 'Bearer ' + S.token}})).json(); S.email = u.email || ''; } catch (e) {}
+      luuPhien(); vaoApp();
+    }
+  });
+  return true;
+}
+function dangNhap() {
+  if (!S.tokenClient && !khoiTaoGoogle()) { $('login-msg').textContent = 'Chưa tải được Google, thử lại sau vài giây.'; return; }
+  S.tokenClient.requestAccessToken(S.email ? {prompt: '', hint: S.email} : {});
+}
+function raNgoai() { xoaPhien(); $('app').hidden = true; $('tools').hidden = true; $('login').hidden = false; }
+function vaoApp() { $('login').hidden = true; $('app').hidden = false; $('tools').hidden = false; $('user').textContent = S.email; tai(); }
+
+/* ---------- Google Sheets ---------- */
+async function api(path, opt) {
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/${path}`, {
+    ...opt, headers: {Authorization: 'Bearer ' + S.token, 'Content-Type': 'application/json'}
+  });
+  if (r.status === 401) { raNgoai(); throw new Error('Phiên đăng nhập hết hạn, đăng nhập lại.'); }
+  if (r.status === 403) throw new Error('Tài khoản này không có quyền (chỉ xem hoặc chưa được chia sẻ file).');
+  if (r.status === 404) throw new Error('Không thấy file tiến độ, hoặc tài khoản chưa được chia sẻ.');
+  if (!r.ok) throw new Error('Lỗi Google Sheets ' + r.status);
+  return r.json();
+}
+async function tai() {
+  try {
+    const j = await api(`values/${CONFIG.TAB}!A1:O500`);
+    const v = j.values || [];
+    S.rows = v.slice(1).map((r, i) => {
+      const o = {_row: i + 2};
+      COLS.forEach((c, k) => { o[c] = r[k] == null ? '' : String(r[k]); });
+      o.buoc = Number(o.buoc) || 0; o.tong_buoc = Number(o.tong_buoc) || (BUOC[o.ban] || []).length;
+      return o;
+    }).filter((o) => o.ma_ban);
+    ve();
+  } catch (e) { $('rows').replaceChildren(el('div', 'jx-msg', e.message)); }
+}
+async function ghi(r, doi, viec) {
+  // Kiểm dòng còn đúng mã trước khi ghi, tránh ghi đè nếu bảng đã bị xếp lại
+  const cur = await api(`values/${CONFIG.TAB}!A${r._row}:O${r._row}`);
+  const c = (cur.values || [[]])[0] || [];
+  if (c[0] !== r.ma_ban) { await tai(); throw new Error('Bảng vừa thay đổi, đã tải lại. Thử lại thao tác.'); }
+  const truoc = Number(c[5]) || 0;
+  const moi = {...r, ...doi, cap_nhat: bayGio() + ' ' + (S.email || '')};
+  if (moi.buoc !== truoc) moi.vao_buoc_luc = bayGio();
+  await api(`values/${CONFIG.TAB}!A${r._row}:O${r._row}?valueInputOption=USER_ENTERED`, {method: 'PUT', body: JSON.stringify({values: [COLS.map((k) => moi[k])]})});
+  await api(`values/${CONFIG.LOG}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[bayGio(), S.email, r.ma_ban, viec, truoc, moi.buoc, moi.nguoi_giu, moi.ghi_chu]]})});
+  await tai();
+}
+function sangBuoc(r, n) {
+  const ds = BUOC[r.ban] || [];
+  if (n > ds.length) return {buoc: ds.length, ten_buoc: 'Đã xong', nguoi_giu: '', trang_thai: 'XONG', can_anh: ''};
+  const cap = (SONG[r.ban] || {})[n];
+  return {buoc: n, ten_buoc: ds[n-1][1], nguoi_giu: cap ? ds[n-1][0] + ' + ' + ds[cap-1][0] : ds[n-1][0], trang_thai: 'DANG_LAM', can_anh: ''};
+}
+
+/* ---------- Vẽ ---------- */
+const mau = (ten) => { const t = (ten || '').toLowerCase(); return t.includes('thiện') ? 'var(--thien)' : t.includes('máy') ? 'var(--may)' : (t.includes('hòa') || t.includes('hoà')) ? 'var(--hoa)' : t.includes('hải') ? 'var(--hai)' : 'var(--mute)'; };
+function nguoi(ten) { const w = el('span', 'jx-who'); const d = el('span', 'jx-dot'); d.style.setProperty('--c', mau(ten)); w.append(d, el('span', null, ten)); return w; }
+function soNgay(s) { const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s || ''); if (!m) return null; return Math.max(0, Math.floor((new Date() - new Date(+m[3], +m[2]-1, +m[1])) / 86400000)); }
+const laCan = (r) => /^c[oó]/i.test(r.can_anh || '');
+
+function ve() {
+  const run = S.rows.filter((r) => r.trang_thai !== 'XONG');
+  $('n-run').textContent = run.length;
+  $('n-need').textContent = run.filter(laCan).length;
+  $('n-stuck').textContent = run.filter((r) => r.trang_thai === 'KET').length;
+  const ds = ($('show-done').checked ? S.rows : run).slice().sort((a, b) =>
+    (a.trang_thai === 'XONG') - (b.trang_thai === 'XONG') || laCan(b) - laCan(a) || (b.trang_thai === 'KET') - (a.trang_thai === 'KET') || (soNgay(b.vao_buoc_luc) || 0) - (soNgay(a.vao_buoc_luc) || 0));
+  $('rows').replaceChildren(...(ds.length ? ds.map(hang) : [el('div', 'jx-msg', 'Chưa có mã nào đang chạy.')]));
+}
+
+function hang(r) {
+  const xong = r.trang_thai === 'XONG', ket = r.trang_thai === 'KET', can = laCan(r);
+  const item = el('details', 'jx-item');
+  item.open = S.open.has(r.ma_ban);
+  item.addEventListener('toggle', () => { if (item.open) S.open.add(r.ma_ban); else S.open.delete(r.ma_ban); });
+  const row = el('summary', 'jx-row');
+
+  const c1 = el('div'); const code = el('div', 'jx-code');
+  code.append(el('span', 'jx-chev'), el('span', null, r.ma + ' · ' + r.ban));
+  if (xong) code.appendChild(el('span', 'jx-flag ok', 'Xong')); else if (ket) code.appendChild(el('span', 'jx-flag bad', 'Kẹt')); else if (can) code.appendChild(el('span', 'jx-flag', 'Chờ anh'));
+  c1.append(code, el('div', 'jx-name', r.ten_mau + ' · ' + r.nuoc));
+
+  const c2 = el('div', 'c2'); const seg = el('div', 'jx-seg');
+  seg.setAttribute('role', 'img'); seg.setAttribute('aria-label', 'Bước ' + r.buoc + ' trên ' + r.tong_buoc);
+  for (let i = 1; i <= r.tong_buoc; i++) seg.appendChild(el('i', xong || i < r.buoc ? 'on' : i === r.buoc ? 'now' : ''));
+  const step = el('div', 'jx-step'); step.append(el('b', null, (xong ? r.tong_buoc : r.buoc) + '/' + r.tong_buoc), '  ' + r.ten_buoc);
+  c2.append(seg, step);
+
+  const c3 = el('div'); if (!xong) c3.appendChild(nguoi(r.nguoi_giu || 'Chưa rõ'));
+  const n = soNgay(r.vao_buoc_luc);
+  const c4 = el('div', 'c4 jx-wait' + (!xong && n != null && n >= 3 ? ' long' : ''));
+  if (xong || n == null) c4.textContent = '—'; else if (n === 0) c4.textContent = 'Hôm nay'; else c4.append(el('b', null, String(n)), ' ngày');
+  const c5 = el('div', 'c5');
+  if (/^https:\/\/chat\.google\.com\//.test(r.link_thread)) { const a = el('a', 'jx-open', 'Mở'); a.href = r.link_thread; a.target = '_blank'; a.rel = 'noopener'; a.setAttribute('aria-label', 'Mở thread ' + r.ma + ' ' + r.ban); c5.appendChild(a); }
+
+  row.append(c1, c2, c3, c4, c5);
+  item.append(row, chiTiet(r));
+  return item;
+}
+
+function chiTiet(r) {
+  const box = el('div', 'jx-detail');
+  const ds = BUOC[r.ban] || [], xongHet = r.trang_thai === 'XONG';
+  const cap = (SONG[r.ban] || {})[r.buoc];
+  if (r.ghi_chu) box.appendChild(el('div', 'jx-full', 'Ghi chú: ' + r.ghi_chu));
+  if (!xongHet) box.appendChild(khungSua(r));
+  const todo = el('div', 'jx-col'), done = el('div', 'jx-col');
+  const hT = el('h3', null, 'Cần xử lý'), hD = el('h3', null, 'Đã xong'); let nT = 0, nD = 0;
+  todo.appendChild(hT); done.appendChild(hD);
+  ds.forEach(([ai, ten], i) => {
+    const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && (n === r.buoc || n === cap);
+    const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next'));
+    line.append(el('span', 'n', xong ? '✓' : String(n)), el('span', 't', xong ? n + '. ' + ten : ten), nguoi(n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : ai));
+    if (xong) { done.appendChild(line); nD++; } else { todo.appendChild(line); nT++; }
+  });
+  hT.appendChild(el('span', null, String(nT))); hD.appendChild(el('span', null, String(nD)));
+  if (!nT) todo.appendChild(el('p', 'jx-none', 'Không còn bước nào.'));
+  if (!nD) done.appendChild(el('p', 'jx-none', 'Chưa có bước nào xong.'));
+  box.append(todo, done);
+  return box;
+}
+
+function khungSua(r) {
+  const ds = BUOC[r.ban] || [], id = r.ma_ban;
+  const box = el('div', 'jx-edit');
+  box.appendChild(el('h3', null, 'Cập nhật tiến độ'));
+  const chay = async (btns, fn) => { btns.forEach((b) => { b.disabled = true; }); try { await fn(); toast('Đã lưu ' + r.ma + ' ' + r.ban, 'ok'); } catch (e) { toast(e.message, 'bad'); btns.forEach((b) => { b.disabled = false; }); } };
+
+  const quick = el('div', 'jx-quick'); const all = [];
+  const nhanh = (NHANH[r.ban] || {})[r.buoc];
+  const them = (label, n, cls) => { const b = el('button', 'btn ' + cls, label); b.type = 'button'; all.push(b);
+    b.onclick = () => chay(all, () => ghi(r, sangBuoc(r, n), n > ds.length ? 'Hoàn tất mã' : 'Chuyển bước')); quick.appendChild(b); };
+  if (nhanh) nhanh.forEach(([l, n], i) => them(l, n, i === 0 ? 'pri' : 'warn'));
+  else if (r.buoc >= ds.length) them('Xong bước ' + r.buoc + ' → hoàn tất mã', ds.length + 1, 'pri');
+  else them('Xong bước ' + r.buoc + ' → sang bước ' + (r.buoc + 1), r.buoc + 1, 'pri');
+  box.appendChild(quick);
+
+  const f = el('div', 'jx-fields');
+  const fld = (label, node, wide) => { const l = el('label', 'fld' + (wide ? ' wide' : ''), label); node.id = node.id || ('f' + Math.random().toString(36).slice(2)); l.htmlFor = node.id; l.appendChild(node); return l; };
+  const sB = el('select'); ds.forEach(([, ten], i) => { const o = new Option((i + 1) + '. ' + ten, i + 1); sB.appendChild(o); }); sB.value = r.buoc;
+  const sN = el('select'); [...new Set([r.nguoi_giu, ...NGUOI].filter(Boolean))].forEach((n) => sN.appendChild(new Option(n, n))); sN.value = r.nguoi_giu;
+  sB.onchange = () => { const d = sangBuoc(r, Number(sB.value)); if (![...sN.options].some((o) => o.value === d.nguoi_giu)) sN.appendChild(new Option(d.nguoi_giu, d.nguoi_giu)); sN.value = d.nguoi_giu; };
+  const cA = el('input'); cA.type = 'checkbox'; cA.checked = laCan(r);
+  const cK = el('input'); cK.type = 'checkbox'; cK.checked = r.trang_thai === 'KET';
+  const lA = el('label', 'chk'); lA.append(cA, 'Chờ anh Hải');
+  const lK = el('label', 'chk'); lK.append(cK, 'Kẹt');
+  const iG = el('input'); iG.type = 'text'; iG.value = r.ghi_chu; iG.id = 'gc-' + id;
+  f.append(fld('Chuyển tới bước', sB), fld('Người giữ', sN), lA, lK, fld('Ghi chú (1 câu)', iG, true));
+  box.appendChild(f);
+  const save = el('button', 'btn', 'Lưu thay đổi'); save.type = 'button'; all.push(save);
+  save.onclick = () => chay(all, () => { const n = Number(sB.value);
+    return ghi(r, {buoc: n, ten_buoc: ds[n-1] ? ds[n-1][1] : r.ten_buoc, nguoi_giu: sN.value, can_anh: cA.checked ? 'CÓ' : '', trang_thai: cK.checked ? 'KET' : 'DANG_LAM', ghi_chu: iG.value.trim()}, 'Sửa tay'); });
+  const q2 = el('div', 'jx-quick'); q2.appendChild(save); box.appendChild(q2);
+  return box;
+}
+
+/* ---------- Thêm mã ---------- */
+async function themMa() {
+  const ma = $('a-ma').value.trim().toUpperCase(), ten = $('a-ten').value.trim().toUpperCase(), nuoc = ($('a-nuoc').value.trim() || 'USA').toUpperCase(), ban = $('a-ban').value, link = $('a-link').value.trim();
+  if (!ma || !ten) { toast('Cần nhập mã và tên mẫu.', 'bad'); return; }
+  const id = `${ma}-${nuoc}-${ban}`;
+  if (S.rows.some((r) => r.ma_ban === id)) { toast(id + ' đã có trong bảng.', 'bad'); return; }
+  const ds = BUOC[ban];
+  $('a-save').disabled = true;
+  try {
+    await api(`values/${CONFIG.TAB}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[id, ma, ten, nuoc, ban, 1, ds.length, ds[0][1], ds[0][0], bayGio(), '', 'DANG_LAM', link, '', bayGio() + ' ' + S.email]]})});
+    await api(`values/${CONFIG.LOG}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[bayGio(), S.email, id, 'Thêm mã', '', 1, ds[0][0], '']]})});
+    $('add-panel').hidden = true; ['a-ma', 'a-ten', 'a-link'].forEach((k) => { $(k).value = ''; });
+    toast('Đã thêm ' + id, 'ok'); await tai();
+  } catch (e) { toast(e.message, 'bad'); }
+  $('a-save').disabled = false;
+}
+
+$('btn-login').onclick = dangNhap;
+$('btn-out').onclick = raNgoai;
+$('btn-reload').onclick = tai;
+$('show-done').onchange = ve;
+$('btn-add').onclick = () => { $('add-panel').hidden = !$('add-panel').hidden; if (!$('add-panel').hidden) $('a-ma').focus(); };
+$('a-cancel').onclick = () => { $('add-panel').hidden = true; };
+$('a-save').onclick = themMa;
+if (docPhien()) vaoApp();
+</script>
+</body>
+</html>
