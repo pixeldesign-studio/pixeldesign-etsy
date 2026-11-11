@@ -208,12 +208,12 @@ const NGUOI = ['Thiện','Máy','Anh Hòa','Anh Hải','Thiện + Máy','Thiện
 // Cột buoc trong sổ = VỊ TRÍ trong danh sách đã tuỳ chỉnh (1..tong_buoc); mỗi bước có khoá k ('8', '9b').
 var QT_CHUNG = [['Anh Hải','Gửi mẫu cho Thiện'],['Thiện','Tối ưu mẫu, up file gốc'],['Máy','Đổ thử 1 năm bất kỳ'],['Thiện','Check năm đổ thử'],['Thiện + Máy','Thiện duyệt, máy đổ full 19 năm'],['Máy','Kiểm tra chéo 19 năm']];
 var QT_BUOC = {
-  CT: QT_CHUNG.concat([['Thiện','Sửa lỗi nhỏ, up final, JPEG, file listing'],['Máy','Vẽ bối cảnh 19 năm'],['Thiện','Xoá watermark bối cảnh, up đủ file'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Thiện','Báo anh Hải sang đăng bài']]),
-  CV: QT_CHUNG.concat([['Máy','Soạn file txt 19 khách'],['Thiện','Sửa lỗi nhỏ, up final, file listing, PDF Canva'],['Máy','Vẽ bối cảnh 19 năm'],['Anh Hòa','Điền Canva, resize 3 size, xuất hình'],['Thiện','Xoá watermark bối cảnh'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Máy','Xuất PDF tài liệu bàn giao'],['Thiện','Check tài liệu bàn giao'],['Thiện','Báo anh Hải sang đăng bài']])
+  CT: QT_CHUNG.concat([['Thiện','Sửa lỗi nhỏ, up final, JPEG, file listing'],['Máy','Vẽ bối cảnh 19 năm'],['Thiện','Xoá watermark bối cảnh, up đủ file'],['Máy','Làm bộ ảnh listing 19 năm'],['Máy','Viết mô tả + tag 19 listing'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Thiện','Báo anh Hải sang đăng bài']]),
+  CV: QT_CHUNG.concat([['Máy','Soạn file txt 19 khách'],['Thiện','Sửa lỗi nhỏ, up final, file listing, PDF Canva'],['Máy','Vẽ bối cảnh 19 năm'],['Anh Hòa','Điền Canva, resize 3 size, xuất hình'],['Thiện','Xoá watermark bối cảnh'],['Máy','Làm bộ ảnh listing 19 năm'],['Máy','Viết mô tả + tag 19 listing'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Máy','Xuất PDF tài liệu bàn giao'],['Thiện','Check tài liệu bàn giao'],['Thiện','Báo anh Hải sang đăng bài']])
 };
-var QT_SONG = { CT: [['7', '8']], CV: [['8', '9'], ['10', '11']] };
-var QT_NHANH = { CT: { '11': [['Listing OK', '15'], ['Có lỗi', '12']], '14': [['OK', '15'], ['Còn lỗi', '12']] },
-                 CV: { '13': [['Listing OK', '17'], ['Có lỗi', '14']], '16': [['OK', '17'], ['Còn lỗi', '14']] } };
+var QT_SONG = { CT: [['7', '8'], ['10', '11']], CV: [['8', '9'], ['10', '11'], ['12', '13']] };   // 11/11: thêm 'Viết mô tả + tag' song song với làm listing
+var QT_NHANH = { CT: { '12': [['Listing OK', '16'], ['Có lỗi', '13']], '15': [['OK', '16'], ['Còn lỗi', '13']] },
+                 CV: { '14': [['Listing OK', '18'], ['Có lỗi', '15']], '17': [['OK', '18'], ['Còn lỗi', '15']] } };
 var QT_NGUOI = ['Thiện', 'Máy', 'Anh Hòa', 'Anh Hải'];
 
 function qtTC(s) { var t = {}; try { t = JSON.parse(s || '{}') || {}; } catch (e) {} return { nguoi: t.nguoi || {}, bo: t.bo || [], phu: t.phu || [] }; }
@@ -240,7 +240,7 @@ function qtNhanh(ban, ds, n) {                                                  
   if (!x) return null;
   return x.map(function (y) { var p = qtKeTiep(ds, qtViTri(ds, y[1])); return [y[0] + ' → ' + (p > ds.length ? 'xong mã' : 'bước ' + ds[p - 1].k), p]; });
 }
-function qtNguoiGiu(ban, ds, p) { var s = qtSong(ban, ds)[p]; return ds[p - 1].ai + (s ? ' + ' + ds[s - 1].ai : ''); }
+function qtNguoiGiu(ban, ds, p) { var s = qtSong(ban, ds)[p]; return ds[p - 1].ai + (s && ds[s - 1].ai !== ds[p - 1].ai ? ' + ' + ds[s - 1].ai : ''); }
 // Áp tuỳ chỉnh mới cho 1 mã: giữ nguyên bước đang ở (theo khoá), bỏ qua bước bị bỏ, tính lại người giữ / tổng bước / đang làm
 function qtAp(ban, tcCu, tcMoi, buoc, dangLam, trangThai) {
   var dsC = qtDs(ban, tcCu), dsM = qtDs(ban, tcMoi), kCur = (dsC[buoc - 1] || {}).k, p = qtViTri(dsM, kCur) || buoc, o = { tuy_chinh: tcMoi, tong_buoc: dsM.length };
