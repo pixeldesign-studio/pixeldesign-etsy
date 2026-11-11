@@ -180,6 +180,44 @@ button,select,input{font:inherit;color:inherit}
 .q-br .k{font-weight:700;white-space:nowrap}
 .q-br .k.ok{color:var(--ok)} .q-br .k.bad{color:var(--bad)}
 .q-foot{font-size:12px;color:var(--dim)}
+
+/* ===== Tab Đăng listing (riêng anh Hải) ===== */
+.jx.tab-dl #v-td,.jx.tab-dl #v-qt,.jx.tab-dl #tools{display:none!important}
+.jx:not(.tab-dl) #v-dl{display:none!important}
+#v-dl{display:flex;flex-direction:column;gap:18px}
+.d-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.d-ctl .q-seg button b{font-variant-numeric:tabular-nums;margin-left:4px;color:var(--fg)}
+.d-ma{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.d-ma > summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding:14px 18px}
+.d-ma > summary::-webkit-details-marker{display:none}
+.d-ma > summary:hover{background:rgba(255,255,255,.025)}
+.d-ma[open] .jx-chev::before{transform:rotate(45deg) translate(-1px,-1px)}
+.d-dem{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.d-dem b{color:var(--fg);font-size:15px}
+.d-bar{grid-column:1/-1;height:6px;border-radius:3px;background:rgba(255,255,255,.09);overflow:hidden}
+.d-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--ok))}
+.d-list{border-top:1px solid var(--line)}
+.d-row{display:grid;grid-template-columns:28px minmax(120px,.9fr) minmax(160px,1.6fr) 96px 58px;gap:12px;align-items:center;padding:8px 18px;border-top:1px solid var(--line);font-size:13px}
+.d-row:first-child{border-top:0}
+.d-row.on{background:rgba(74,222,128,.05)}
+.d-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--ok);cursor:pointer;margin:0}
+.d-tuoi{font-weight:600;font-variant-numeric:tabular-nums}
+.d-tuoi span{font-weight:400;color:var(--mute);margin-left:6px}
+.d-row input[type=text]{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.d-row input[type=text].thieu{border-color:rgba(246,184,75,.5)}
+.d-ngay{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.d-mo{font-size:12px;font-weight:600;color:var(--acc2);text-decoration:none;justify-self:end}
+.d-mo:hover{text-decoration:underline}
+.d-sx{background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mute)}
+.d-sx h3{margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.d-sx div b{color:var(--fg);font-weight:600}
+@media (max-width:640px){
+  .d-row{grid-template-columns:28px minmax(0,1fr) auto;gap:6px 10px;padding:10px 14px}
+  .d-row > .d-id{grid-column:2/-1;order:4}
+  .d-row > .d-ngay{order:3;justify-self:end}
+  .d-row > .d-mo{grid-column:2/-1;order:5;justify-self:start}
+  .d-ma > summary{padding:12px 14px}
+}
 </style>
 </head>
 <body>
@@ -201,6 +239,7 @@ button,select,input{font:inherit;color:inherit}
   <div class="jx-tabs" role="tablist" aria-label="Chọn trang">
     <button type="button" role="tab" id="tab-td" aria-selected="true">Tiến độ</button>
     <button type="button" role="tab" id="tab-qt" aria-selected="false">Quy trình chuẩn</button>
+    <button type="button" role="tab" id="tab-dl" aria-selected="false" hidden>Đăng listing</button>
   </div>
 
   <div id="v-td" style="display:flex;flex-direction:column;gap:22px">
@@ -257,6 +296,22 @@ button,select,input{font:inherit;color:inherit}
     <div class="q-leg"><span class="q-who hai">Anh Hải</span><span class="q-who thien">Thiện</span><span class="q-who may">Máy</span><span class="q-who hoa">Anh Hòa</span><span id="q-count"></span></div>
     <div class="q-steps" id="q-steps"></div>
     <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG.</div>
+  </section>
+  <section id="v-dl" aria-label="Đăng listing">
+    <div class="jx-stats">
+      <div class="jx-stat w"><div class="jx-lbl">Xong, chưa đăng</div><div class="jx-num" id="d-n-chua">—</div></div>
+      <div class="jx-stat"><div class="jx-lbl">Đã đăng</div><div class="jx-num" id="d-n-da">—</div></div>
+      <div class="jx-stat b"><div class="jx-lbl">Mã chưa xong sản xuất</div><div class="jx-num" id="d-n-sx">—</div></div>
+    </div>
+    <div class="d-ctl">
+      <div class="q-seg" role="group" aria-label="Lọc listing">
+        <button id="d-f-chua" type="button" aria-pressed="true">Chưa đăng</button>
+        <button id="d-f-da" type="button" aria-pressed="false">Đã đăng</button>
+        <button id="d-f-all" type="button" aria-pressed="false">Tất cả</button>
+      </div>
+      <button class="btn" id="d-reload" type="button">Tải lại</button>
+    </div>
+    <div id="d-body"><div class="jx-msg" style="border:0">Đang tải…</div></div>
   </section>
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
@@ -387,8 +442,8 @@ function dangNhap() {
   S.tuDong = false;
   S.tokenClient.requestAccessToken(S.email ? {prompt: '', login_hint: S.email} : {prompt: 'select_account'});
 }
-function raNgoai(quen) { xoaPhien(quen); $('app').hidden = true; $('tools').hidden = true; $('login').hidden = false; hienNutTiepTuc(); }
-function vaoApp() { $('login').hidden = true; $('app').hidden = false; $('tools').hidden = false; $('user').textContent = S.email; tai(); }
+function raNgoai(quen) { xoaPhien(quen); if (quen) setTimeout(dlAn, 0); $('app').hidden = true; $('tools').hidden = true; $('login').hidden = false; hienNutTiepTuc(); }
+function vaoApp() { $('login').hidden = true; $('app').hidden = false; $('tools').hidden = false; $('user').textContent = S.email; tai(); setTimeout(dlKiemChu, 0); }
 
 /* ---------- Google Sheets ---------- */
 async function api(path, opt) {
@@ -669,6 +724,157 @@ $('a-save').onclick = themMa;
 if (docPhien()) { vaoApp(); henLamMoi(); }
 else if (S.email) { hienNutTiepTuc(); $('login-msg').textContent = 'Đang tự đăng nhập ' + S.email + '…'; window.addEventListener('load', () => setTimeout(lamMoi, 300)); }
 
+// ===== Tab Đăng listing (thêm 11/11, chỉ anh Hải thấy) =====
+// Lưu ở tab DANG_LISTING cùng file Sheet: mỗi mã + bản + tuổi 1 dòng. Mã có trang_thai XONG ở TIEN_DO_MA tự sinh đủ 19 dòng tuổi.
+const DL = {
+  TAB: 'DANG_LISTING',
+  COLS: ['ma_tuoi', 'ma_ban', 'tuoi', 'nam', 'da_dang', 'ngay_dang', 'listing_id', 'ghi_chu', 'cap_nhat'],
+  CHU: ['acdca020b43ebdd9702607b325656672b654d9e95fd3d8b0c98b11bad7cba88b', '4f88eba95d1cdf756b031a7700fc809286c5aefc201fede9e75470a2871af8ac'],   // SHA-256 email anh Hải
+  TUOI: [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 18, 16],
+  NAM: 2027
+};
+const D = {la: false, ma: [], rows: [], loc: 'chua', dong: new Set(), dangTai: false};
+const homNay = () => { const d = new Date(); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`; };
+const dlDa = (r) => r.da_dang === 'CO';
+async function bam(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s).trim().toLowerCase())); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join(''); }
+function dangODl() { return document.querySelector('.jx').classList.contains('tab-dl'); }
+async function dlKiemChu() {
+  let la = false;
+  try { la = !!S.email && DL.CHU.includes(await bam(S.email)); } catch (e) {}
+  D.la = la; $('tab-dl').hidden = !la;
+  if (!la) { if (dangODl()) window.jxTab('td'); return; }
+  if (location.hash === '#dang-listing') window.jxTab('dl');
+  else if (dangODl()) dlTai();
+}
+function dlAn() { D.la = false; $('tab-dl').hidden = true; if (dangODl()) window.jxTab('td'); }
+function dlMo() { if (!D.la) return; if (!S.token) { $('d-body').replaceChildren(el('div', 'jx-msg', 'Đang đăng nhập lại…')); return; } dlTai(); }
+
+async function dlTaoTab() {
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}:batchUpdate`, {method: 'POST',
+    headers: {Authorization: 'Bearer ' + S.token, 'Content-Type': 'application/json'},
+    body: JSON.stringify({requests: [{addSheet: {properties: {title: DL.TAB, gridProperties: {frozenRowCount: 1}}}}]})});
+  if (!r.ok) throw new Error('Không tạo được tab ' + DL.TAB + ' trong Sheet (' + r.status + ').');
+  await api(`values/${DL.TAB}!A1:I1?valueInputOption=RAW`, {method: 'PUT', body: JSON.stringify({values: [DL.COLS]})});
+}
+async function dlDocListing() {
+  let j;
+  try { j = await api(`values/${DL.TAB}!A1:I5000`); }
+  catch (e) { if (!/ 400$/.test(e.message)) throw e; await dlTaoTab(); j = {values: [DL.COLS]}; }
+  return (j.values || []).slice(1).map((v, i) => {
+    const o = {_row: i + 2}; DL.COLS.forEach((c, k) => { o[c] = v[k] == null ? '' : String(v[k]); }); o.tuoi = Number(o.tuoi) || 0; return o;
+  }).filter((o) => o.ma_tuoi);
+}
+async function dlTai() {
+  if (D.dangTai) return; D.dangTai = true;
+  try {
+    const t = await api(`values/${CONFIG.TAB}!A1:L500`);
+    D.ma = (t.values || []).slice(1).filter((v) => v[0]).map((v) => ({ma_ban: v[0], ma: v[1] || '', ten_mau: v[2] || '', nuoc: v[3] || '', ban: v[4] || '', buoc: v[5] || '', tong_buoc: v[6] || '', ten_buoc: v[7] || '', nguoi_giu: v[8] || '', xong: v[11] === 'XONG'}));
+    D.rows = await dlDocListing();
+    const co = new Set(D.rows.map((r) => r.ma_tuoi)), them = [];
+    D.ma.filter((m) => m.xong).forEach((m) => DL.TUOI.forEach((t) => { const k = m.ma_ban + '-' + t; if (!co.has(k)) them.push([k, m.ma_ban, t, DL.NAM - t, '', '', '', '', bayGio() + ' tự thêm']); }));
+    if (them.length) {
+      await api(`values/${DL.TAB}!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: them})});
+      D.rows = await dlDocListing();
+    }
+    dlVe();
+  } catch (e) { $('d-body').replaceChildren(el('div', 'jx-msg', e.message)); }
+  D.dangTai = false;
+}
+async function dlGhi(r, doi) {
+  const cur = await api(`values/${DL.TAB}!A${r._row}`);
+  if (((cur.values || [[]])[0] || [])[0] !== r.ma_tuoi) { await dlTai(); throw new Error('Bảng vừa thay đổi, đã tải lại. Thử lại thao tác.'); }
+  const moi = {...r, ...doi, cap_nhat: bayGio() + ' ' + (S.email || '')};
+  await api(`values/${DL.TAB}!A${r._row}:I${r._row}?valueInputOption=RAW`, {method: 'PUT', body: JSON.stringify({values: [DL.COLS.map((k) => moi[k])]})});
+  Object.assign(r, moi);
+}
+function layId(v) { v = String(v || '').trim(); if (!v) return ''; const m = /listing\/(\d{6,})/.exec(v) || /^(\d{6,})$/.exec(v); return m ? m[1] : null; }
+
+function dlDem() {
+  const xong = new Set(D.ma.filter((m) => m.xong).map((m) => m.ma_ban));
+  const ds = D.rows.filter((r) => xong.has(r.ma_ban));
+  const da = ds.filter(dlDa).length;
+  $('d-n-chua').textContent = ds.length - da; $('d-n-da').textContent = da; $('d-n-sx').textContent = D.ma.filter((m) => !m.xong).length;
+  [['chua', 'Chưa đăng', ds.length - da], ['da', 'Đã đăng', da], ['all', 'Tất cả', ds.length]].forEach(([k, t, n]) => {
+    const b = $('d-f-' + k); b.replaceChildren(document.createTextNode(t), el('b', null, n)); b.setAttribute('aria-pressed', D.loc === k);
+  });
+}
+function dlTieuDe(m, the) {
+  const ds = D.rows.filter((r) => r.ma_ban === m.ma_ban), da = ds.filter(dlDa).length;
+  const dem = the.querySelector('.d-dem'); dem.replaceChildren(el('b', null, da), document.createTextNode('/' + ds.length + ' đã đăng'));
+  the.querySelector('.d-bar i').style.width = (ds.length ? da / ds.length * 100 : 0) + '%';
+  const f = the.querySelector('.jx-flag'); if (f) f.hidden = !(ds.length && da === ds.length);
+}
+function dlHang(r, m, the) {
+  const h = el('div', 'd-row' + (dlDa(r) ? ' on' : ''));
+  const cb = el('input'); cb.type = 'checkbox'; cb.checked = dlDa(r); cb.setAttribute('aria-label', 'Đã đăng ' + m.ma + ' ' + m.ban + ' ' + r.tuoi + ' tuổi');
+  const tu = el('div', 'd-tuoi', r.tuoi + ' tuổi'); tu.appendChild(el('span', null, 'Back in ' + (r.nam || DL.NAM - r.tuoi)));
+  const id = el('input', 'd-id'); id.type = 'text'; id.value = r.listing_id; id.placeholder = 'Dán link hoặc ID listing'; id.setAttribute('aria-label', 'ID listing ' + r.tuoi + ' tuổi'); id.autocomplete = 'off';
+  const ngay = el('div', 'd-ngay', r.ngay_dang || '');
+  const mo = el('a', 'd-mo', 'Mở'); mo.target = '_blank'; mo.rel = 'noopener';
+  const capNhat = () => {
+    h.classList.toggle('on', dlDa(r)); cb.checked = dlDa(r); ngay.textContent = r.ngay_dang || ''; id.value = r.listing_id;
+    id.classList.toggle('thieu', dlDa(r) && !r.listing_id);
+    mo.hidden = !r.listing_id; if (r.listing_id) mo.href = 'https://www.etsy.com/listing/' + r.listing_id;
+    dlTieuDe(m, the); dlDem();
+  };
+  cb.onchange = async () => {
+    const bat = cb.checked; cb.disabled = true;
+    try { await dlGhi(r, bat ? {da_dang: 'CO', ngay_dang: r.ngay_dang || homNay()} : {da_dang: '', ngay_dang: ''}); toast((bat ? 'Đã đánh dấu đăng ' : 'Bỏ đánh dấu ') + m.ma_ban + ' ' + r.tuoi + ' tuổi', 'ok'); }
+    catch (e) { toast(e.message, 'bad'); }
+    cb.disabled = false; capNhat();
+  };
+  id.onchange = async () => {
+    const v = layId(id.value);
+    if (v === null) { toast('Không đọc được ID listing. Dán link etsy.com/listing/… hoặc dãy số ID.', 'bad'); id.value = r.listing_id; return; }
+    if (v === r.listing_id) { id.value = v; return; }
+    const trung = v && D.rows.find((x) => x !== r && x.listing_id === v);
+    if (trung) { toast('ID ' + v + ' đã gắn cho ' + trung.ma_tuoi + '.', 'bad'); id.value = r.listing_id; return; }
+    const doi = {listing_id: v}; if (v && !dlDa(r)) { doi.da_dang = 'CO'; doi.ngay_dang = homNay(); }
+    id.disabled = true;
+    try { await dlGhi(r, doi); toast('Đã lưu ID ' + (v || '(trống)') + ' cho ' + m.ma_ban + ' ' + r.tuoi + ' tuổi', 'ok'); }
+    catch (e) { toast(e.message, 'bad'); }
+    id.disabled = false; capNhat();
+  };
+  id.onkeydown = (e) => { if (e.key === 'Enter') id.blur(); };
+  h.append(cb, tu, id, ngay, mo);
+  h._capNhat = capNhat;
+  return h;
+}
+function dlVe() {
+  dlDem();
+  const thu = DL.TUOI.reduce((o, t, i) => (o[t] = i, o), {});
+  const xong = D.ma.filter((m) => m.xong).sort((a, b) => a.ma.localeCompare(b.ma) || a.nuoc.localeCompare(b.nuoc) || a.ban.localeCompare(b.ban));
+  const out = [];
+  xong.forEach((m) => {
+    const ds = D.rows.filter((r) => r.ma_ban === m.ma_ban).sort((a, b) => (thu[a.tuoi] ?? 99) - (thu[b.tuoi] ?? 99) || b.tuoi - a.tuoi);
+    const hien = ds.filter((r) => D.loc === 'all' || (D.loc === 'da' ? dlDa(r) : !dlDa(r)));
+    if (!hien.length) return;
+    const the = el('details', 'd-ma'); the.open = !D.dong.has(m.ma_ban);
+    the.addEventListener('toggle', () => { if (the.open) D.dong.delete(m.ma_ban); else D.dong.add(m.ma_ban); });
+    const sm = el('summary'), trai = el('div'), code = el('div', 'jx-code');
+    const flag = el('span', 'jx-flag ok', 'Đăng đủ'); flag.hidden = true;
+    code.append(el('span', 'jx-chev'), el('span', null, m.ma + ' · ' + m.ban), flag);
+    trai.append(code, el('div', 'jx-name', m.ten_mau + ' · ' + m.nuoc));
+    const bar = el('div', 'd-bar'); bar.appendChild(el('i'));
+    sm.append(trai, el('div', 'd-dem'), bar);
+    const list = el('div', 'd-list');
+    the.append(sm, list);
+    const hs = hien.map((r) => dlHang(r, m, the)); list.append(...hs); hs.forEach((h) => h._capNhat());
+    dlTieuDe(m, the);
+    out.push(the);
+  });
+  if (!out.length) out.push(el('div', 'jx-msg', !xong.length ? 'Chưa có mã nào xong sản xuất.' : D.loc === 'chua' ? 'Đã đăng hết các mã đã xong.' : 'Chưa đánh dấu listing nào đã đăng.'));
+  const sx = D.ma.filter((m) => !m.xong);
+  if (sx.length) {
+    const box = el('div', 'd-sx'); box.appendChild(el('h3', null, 'Đang sản xuất, chưa đăng được'));
+    sx.forEach((m) => { const d = el('div'); d.append(el('b', null, m.ma + ' · ' + m.ban), document.createTextNode(' ' + m.ten_mau + ' · ' + m.nuoc + ' — bước ' + m.buoc + '/' + m.tong_buoc + ': ' + m.ten_buoc + (m.nguoi_giu ? ' (' + m.nguoi_giu + ')' : ''))); box.appendChild(d); });
+    out.push(box);
+  }
+  $('d-body').replaceChildren(...out);
+}
+[['chua', 'd-f-chua'], ['da', 'd-f-da'], ['all', 'd-f-all']].forEach(([k, id]) => { $(id).onclick = () => { D.loc = k; dlVe(); }; });
+$('d-reload').onclick = dlTai;
+
 // ===== Tab Quy trình chuẩn (đồng bộ với file "Quy trinh thiet ke Jolie 2027 (sua 11-11).html") =====
 (function () {
 const R = "Drive › 2027 › JOLIE POSTER 2027 › ";
@@ -775,12 +981,16 @@ const CV = [...common,
     try { navigator.clipboard.writeText(t).then(ok, chon); } catch (_) { chon(); }
   });
   function tab(t) {
-    document.querySelector('.jx').classList.toggle('tab-qt', t === 'qt');
-    g('tab-td').setAttribute('aria-selected', t !== 'qt'); g('tab-qt').setAttribute('aria-selected', t === 'qt');
-    try { history.replaceState(null, '', t === 'qt' ? '#quy-trinh' : location.pathname + location.search); } catch (e) {}
+    const jx = document.querySelector('.jx');
+    jx.classList.toggle('tab-qt', t === 'qt'); jx.classList.toggle('tab-dl', t === 'dl');
+    ['td', 'qt', 'dl'].forEach((k) => g('tab-' + k).setAttribute('aria-selected', t === k));
+    try { history.replaceState(null, '', t === 'qt' ? '#quy-trinh' : t === 'dl' ? '#dang-listing' : location.pathname + location.search); } catch (e) {}
+    if (t === 'dl') dlMo();
   }
+  window.jxTab = tab;
   g('tab-td').onclick = () => tab('td');
   g('tab-qt').onclick = () => tab('qt');
+  g('tab-dl').onclick = () => tab('dl');
   ve();
   if (location.hash === '#quy-trinh') tab('qt');
 })();
