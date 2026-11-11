@@ -118,6 +118,18 @@ button,select,input{font:inherit;color:inherit}
 .jx-st.lam .t{color:var(--fg)}
 .jx-st.now.lam .t::after{content:none}
 .jx-step i{font-style:normal;color:var(--acc2);font-weight:600}
+.jx-tc{color:var(--warn)}
+.jx-tag{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-left:8px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+.jx-tag.bo{border-color:rgba(255,107,125,.5);color:var(--bad)}
+.jx-st.bo .t{text-decoration:line-through;color:var(--dim)}
+.jx-st.phu .n{color:var(--warn)}
+.jx-who.sua{cursor:pointer}
+.jx-who.sua:hover{border-color:var(--acc2)}
+.jx-sua{display:flex;flex-direction:column;gap:8px;margin:2px 0 8px 32px;padding:10px 12px;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.07);border-radius:12px;font-size:12px}
+.jx-sua1,.jx-them{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.jx-sua select,.jx-sua input{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px}
+.jx-sua input{flex:1;min-width:180px}
+.jx-sua .btn{padding:5px 12px;font-size:12px}
 @media (max-width:720px){
   .jx-head{display:none}
   .jx-row{grid-template-columns:1fr auto;gap:10px 12px}
@@ -190,18 +202,83 @@ const CONFIG = {
 const COLS = ['ma_ban','ma','ten_mau','nuoc','ban','buoc','tong_buoc','ten_buoc','nguoi_giu','vao_buoc_luc','can_anh','trang_thai','link_thread','ghi_chu','cap_nhat'];
 const NGUOI = ['Thiện','Máy','Anh Hòa','Anh Hải','Thiện + Máy','Thiện + Anh Hòa'];
 
-// Quy trình anh Hải chốt 10/11/2026
-const CHUNG = [['Anh Hải','Gửi mẫu cho Thiện'],['Thiện','Tối ưu mẫu, up file gốc'],['Máy','Đổ thử 1 năm bất kỳ'],['Thiện','Check năm đổ thử'],['Thiện + Máy','Thiện duyệt, máy đổ full 19 năm'],['Máy','Kiểm tra chéo 19 năm']];
-const BUOC = {
-  CT: [...CHUNG,['Thiện','Sửa lỗi nhỏ, up final, JPEG, file listing'],['Máy','Vẽ bối cảnh 19 năm'],['Thiện','Xoá watermark bối cảnh, up đủ file'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Thiện','Báo anh Hải sang đăng bài']],
-  CV: [...CHUNG,['Máy','Soạn file txt 19 khách'],['Thiện','Sửa lỗi nhỏ, up final, file listing, PDF Canva'],['Máy','Vẽ bối cảnh 19 năm'],['Anh Hòa','Điền Canva, resize 3 size, xuất hình'],['Thiện','Xoá watermark bối cảnh'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Máy','Xuất PDF tài liệu bàn giao'],['Thiện','Check tài liệu bàn giao'],['Thiện','Báo anh Hải sang đăng bài']]
+// ===== LÕI QUY TRÌNH (dùng chung app tiến độ + Pixie TienDoMa.gs — sửa 1 chỗ thì chép sang chỗ kia) =====
+// Quy trình chuẩn chốt 10/11 + tuỳ chỉnh riêng từng mã (cột tuy_chinh, JSON):
+//   {"nguoi":{"8":"Thiện"}, "bo":["12"], "phu":[{"sau":"9","id":"9b","ai":"Máy","ten":"Xuất thêm 11x14"}]}
+// Cột buoc trong sổ = VỊ TRÍ trong danh sách đã tuỳ chỉnh (1..tong_buoc); mỗi bước có khoá k ('8', '9b').
+var QT_CHUNG = [['Anh Hải','Gửi mẫu cho Thiện'],['Thiện','Tối ưu mẫu, up file gốc'],['Máy','Đổ thử 1 năm bất kỳ'],['Thiện','Check năm đổ thử'],['Thiện + Máy','Thiện duyệt, máy đổ full 19 năm'],['Máy','Kiểm tra chéo 19 năm']];
+var QT_BUOC = {
+  CT: QT_CHUNG.concat([['Thiện','Sửa lỗi nhỏ, up final, JPEG, file listing'],['Máy','Vẽ bối cảnh 19 năm'],['Thiện','Xoá watermark bối cảnh, up đủ file'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Thiện','Báo anh Hải sang đăng bài']]),
+  CV: QT_CHUNG.concat([['Máy','Soạn file txt 19 khách'],['Thiện','Sửa lỗi nhỏ, up final, file listing, PDF Canva'],['Máy','Vẽ bối cảnh 19 năm'],['Anh Hòa','Điền Canva, resize 3 size, xuất hình'],['Thiện','Xoá watermark bối cảnh'],['Máy','Làm bộ ảnh listing 19 năm'],['Thiện','Check bộ listing'],['Thiện','Note ảnh lỗi, báo anh Hòa (nếu có lỗi)'],['Anh Hòa','Sửa tay bằng Photoshop (nếu có lỗi)'],['Thiện','Check lại bộ listing (nếu có lỗi)'],['Máy','Xuất PDF tài liệu bàn giao'],['Thiện','Check tài liệu bàn giao'],['Thiện','Báo anh Hải sang đăng bài']])
 };
-const SONG = {CT:{7:8}, CV:{8:9,10:11}};
-// Bước có nhánh: [nhãn nút, bước tới]
-const NHANH = {
-  CT: {11:[['Listing OK → bước 15',15],['Có lỗi → bước 12',12]], 14:[['OK → bước 15',15],['Còn lỗi → bước 12',12]]},
-  CV: {13:[['Listing OK → bước 17',17],['Có lỗi → bước 14',14]], 16:[['OK → bước 17',17],['Còn lỗi → bước 14',14]]}
-};
+var QT_SONG = { CT: [['7', '8']], CV: [['8', '9'], ['10', '11']] };
+var QT_NHANH = { CT: { '11': [['Listing OK', '15'], ['Có lỗi', '12']], '14': [['OK', '15'], ['Còn lỗi', '12']] },
+                 CV: { '13': [['Listing OK', '17'], ['Có lỗi', '14']], '16': [['OK', '17'], ['Còn lỗi', '14']] } };
+var QT_NGUOI = ['Thiện', 'Máy', 'Anh Hòa', 'Anh Hải'];
+
+function qtTC(s) { var t = {}; try { t = JSON.parse(s || '{}') || {}; } catch (e) {} return { nguoi: t.nguoi || {}, bo: t.bo || [], phu: t.phu || [] }; }
+function qtTCStr(tc) { var r = {}; if (Object.keys(tc.nguoi).length) r.nguoi = tc.nguoi; if (tc.bo.length) r.bo = tc.bo; if (tc.phu.length) r.phu = tc.phu; return Object.keys(r).length ? JSON.stringify(r) : ''; }
+function qtDs(ban, tcStr) {
+  var tc = qtTC(tcStr), goc = QT_BUOC[ban] || [], ds = [];
+  goc.forEach(function (x, i) {
+    var k = String(i + 1);
+    ds.push({ k: k, ai: x[0], ten: x[1], bo: false, phu: false });
+    tc.phu.filter(function (p) { return String(p.sau) === k; }).forEach(function (p) { ds.push({ k: String(p.id), ai: p.ai, ten: p.ten, bo: false, phu: true }); });
+  });
+  ds.forEach(function (d) { if (tc.nguoi[d.k]) d.ai = tc.nguoi[d.k]; if (tc.bo.indexOf(d.k) >= 0) d.bo = true; });
+  return ds;
+}
+function qtViTri(ds, k) { for (var i = 0; i < ds.length; i++) if (ds[i].k === String(k)) return i + 1; return 0; }
+function qtKeTiep(ds, n) { while (n <= ds.length && ds[n - 1].bo) n++; return n; }          // bước không bị bỏ đầu tiên từ n (> độ dài = xong mã)
+function qtSong(ban, ds) {                                                                      // vị trí a → b (chạy song song)
+  var m = {};
+  (QT_SONG[ban] || []).forEach(function (p) { var a = qtViTri(ds, p[0]), b = qtViTri(ds, p[1]); if (a && b && b === a + 1 && !ds[a - 1].bo && !ds[b - 1].bo) m[a] = b; });
+  return m;
+}
+function qtNhanh(ban, ds, n) {                                                                  // bước có nhánh → [[nhãn, vị trí tới]]
+  var x = (QT_NHANH[ban] || {})[(ds[n - 1] || {}).k];
+  if (!x) return null;
+  return x.map(function (y) { var p = qtKeTiep(ds, qtViTri(ds, y[1])); return [y[0] + ' → ' + (p > ds.length ? 'xong mã' : 'bước ' + ds[p - 1].k), p]; });
+}
+function qtNguoiGiu(ban, ds, p) { var s = qtSong(ban, ds)[p]; return ds[p - 1].ai + (s ? ' + ' + ds[s - 1].ai : ''); }
+// Áp tuỳ chỉnh mới cho 1 mã: giữ nguyên bước đang ở (theo khoá), bỏ qua bước bị bỏ, tính lại người giữ / tổng bước / đang làm
+function qtAp(ban, tcCu, tcMoi, buoc, dangLam, trangThai) {
+  var dsC = qtDs(ban, tcCu), dsM = qtDs(ban, tcMoi), kCur = (dsC[buoc - 1] || {}).k, p = qtViTri(dsM, kCur) || buoc, o = { tuy_chinh: tcMoi, tong_buoc: dsM.length };
+  if (trangThai === 'XONG') o.buoc = dsM.length;
+  else {
+    p = qtKeTiep(dsM, p);
+    if (p > dsM.length) { o.buoc = dsM.length; o.trang_thai = 'XONG'; o.ten_buoc = 'Đã xong'; o.nguoi_giu = ''; }
+    else { o.buoc = p; o.ten_buoc = dsM[p - 1].ten; o.nguoi_giu = qtNguoiGiu(ban, dsM, p); }
+  }
+  o.dang_lam = String(dangLam || '').split(';').map(function (x) {
+    var m = /^\s*(\d+)@(.*)$/.exec(x); if (!m) return '';
+    var np = qtViTri(dsM, (dsC[Number(m[1]) - 1] || {}).k);
+    return np && !dsM[np - 1].bo && np >= o.buoc ? np + '@' + m[2] : '';
+  }).filter(String).join(';');
+  return o;
+}
+// Sửa tuỳ chỉnh (trả về chuỗi JSON mới)
+function qtDoiNguoi(tcStr, k, ai) {
+  var tc = qtTC(tcStr), goc = null;
+  tc.phu.forEach(function (p) { if (String(p.id) === String(k)) { p.ai = ai; goc = 'phu'; } });
+  if (!goc) tc.nguoi[String(k)] = ai;
+  return qtTCStr(tc);
+}
+function qtBo(tcStr, k, bo) { var tc = qtTC(tcStr); tc.bo = tc.bo.filter(function (x) { return x !== String(k); }); if (bo) tc.bo.push(String(k)); return qtTCStr(tc); }
+function qtThem(tcStr, sauK, ai, ten) {
+  var tc = qtTC(tcStr), sau = String(sauK).replace(/[a-z]+$/, ''), n = tc.phu.filter(function (p) { return String(p.sau) === sau; }).length;
+  tc.phu.push({ sau: sau, id: sau + String.fromCharCode(98 + n), ai: ai, ten: String(ten).trim() });
+  return qtTCStr(tc);
+}
+function qtTomTat(tcStr) {                                                                      // mô tả ngắn để ghi nhật ký
+  var tc = qtTC(tcStr), t = [];
+  Object.keys(tc.nguoi).forEach(function (k) { t.push('bước ' + k + ' → ' + tc.nguoi[k]); });
+  tc.bo.forEach(function (k) { t.push('bỏ bước ' + k); });
+  tc.phu.forEach(function (p) { t.push('thêm ' + p.id + ' (' + p.ai + ': ' + p.ten + ')'); });
+  return t.join('; ') || 'theo quy trình chuẩn';
+}
+// ===== HẾT LÕI =====
+const BUOC = {CT: QT_BUOC.CT, CV: QT_BUOC.CV};   // dạng [người, tên] cho phần Thêm mã
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -257,14 +334,15 @@ async function api(path, opt) {
 }
 async function tai() {
   try {
-    const j = await api(`values/${CONFIG.TAB}!A1:Q500`);   // P = may_bao (Pixie ghi) · Q = dang_lam (Thiện đánh dấu)
+    const j = await api(`values/${CONFIG.TAB}!A1:R500`);   // P = may_bao (Pixie ghi) · Q = dang_lam (Thiện đánh dấu)
     const v = j.values || [];
     S.rows = v.slice(1).map((r, i) => {
       const o = {_row: i + 2};
       COLS.forEach((c, k) => { o[c] = r[k] == null ? '' : String(r[k]); });
       o.may_bao = r[15] == null ? '' : String(r[15]);
       o.dang_lam = r[16] == null ? '' : String(r[16]);
-      o.buoc = Number(o.buoc) || 0; o.tong_buoc = Number(o.tong_buoc) || (BUOC[o.ban] || []).length;
+      o.tuy_chinh = r[17] == null ? '' : String(r[17]);
+      o.buoc = Number(o.buoc) || 0; o.tong_buoc = Number(o.tong_buoc) || qtDs(o.ban, o.tuy_chinh).length;
       return o;
     }).filter((o) => o.ma_ban);
     ve();
@@ -285,10 +363,10 @@ async function ghi(r, doi, viec) {
   await tai();
 }
 function sangBuoc(r, n) {
-  const ds = BUOC[r.ban] || [];
-  if (n > ds.length) return {buoc: ds.length, ten_buoc: 'Đã xong', nguoi_giu: '', trang_thai: 'XONG', can_anh: ''};
-  const cap = (SONG[r.ban] || {})[n];
-  return {buoc: n, ten_buoc: ds[n-1][1], nguoi_giu: cap ? ds[n-1][0] + ' + ' + ds[cap-1][0] : ds[n-1][0], trang_thai: 'DANG_LAM', can_anh: ''};
+  const ds = qtDs(r.ban, r.tuy_chinh);
+  n = qtKeTiep(ds, n);
+  if (n > ds.length) return {buoc: ds.length, tong_buoc: ds.length, ten_buoc: 'Đã xong', nguoi_giu: '', trang_thai: 'XONG', can_anh: ''};
+  return {buoc: n, tong_buoc: ds.length, ten_buoc: ds[n-1].ten, nguoi_giu: qtNguoiGiu(r.ban, ds, n), trang_thai: 'DANG_LAM', can_anh: ''};
 }
 
 /* ---------- Vẽ ---------- */
@@ -323,8 +401,8 @@ function hang(r) {
   const c2 = el('div', 'c2'); const seg = el('div', 'jx-seg');
   seg.setAttribute('role', 'img'); seg.setAttribute('aria-label', 'Bước ' + r.buoc + ' trên ' + r.tong_buoc);
   for (let i = 1; i <= r.tong_buoc; i++) seg.appendChild(el('i', xong || i < r.buoc ? 'on' : i === r.buoc ? 'now' : ''));
-  const step = el('div', 'jx-step'); step.append(el('b', null, (xong ? r.tong_buoc : r.buoc) + '/' + r.tong_buoc), '  ' + r.ten_buoc);
-  const dlh = [...dlDoc(r.dang_lam).keys()]; if (!xong && dlh.length) step.append(' · ', el('i', null, 'đang làm bước ' + dlh.join(', ')));
+  const step = el('div', 'jx-step'); const kH = (qtDs(r.ban, r.tuy_chinh)[r.buoc - 1] || {}).k; step.append(el('b', null, (xong ? r.tong_buoc : r.buoc) + '/' + r.tong_buoc), '  ' + (!xong && kH && kH !== String(r.buoc) ? 'Bước ' + kH + ': ' : '') + r.ten_buoc);
+  const dlh = [...dlDoc(r.dang_lam).keys()]; if (!xong && dlh.length) step.append(' · ', el('i', null, 'đang làm bước ' + dlh.map((x) => (qtDs(r.ban, r.tuy_chinh)[x - 1] || {}).k || x).join(', ')));
   c2.append(seg, step);
 
   const c3 = el('div'); if (!xong) c3.appendChild(nguoi(r.nguoi_giu || 'Chưa rõ'));
@@ -346,32 +424,52 @@ function maySo(r) { const m = /^Máy (xong|kẹt) bước (\d+).*@(\d+)\s*$/.exe
 
 function chiTiet(r) {
   const box = el('div', 'jx-detail');
-  const ds = BUOC[r.ban] || [], xongHet = r.trang_thai === 'XONG';
-  const cap = (SONG[r.ban] || {})[r.buoc];
+  const ds = qtDs(r.ban, r.tuy_chinh), xongHet = r.trang_thai === 'XONG';
+  const cap = qtSong(r.ban, ds)[r.buoc];
   const mb = maySo(r);
   if (mb) box.appendChild(el('div', 'jx-full jx-may' + (mb.xong ? '' : ' bad'), mb.xong ? 'Máy đã xong bước ' + mb.buoc + ' (song song) — Thiện xong phần mình rồi kéo bước.' : 'Máy kẹt ở bước ' + mb.buoc + ' — xem thread mã (Pixie đã ghi nhật ký).'));
+  if (r.tuy_chinh) box.appendChild(el('div', 'jx-full jx-tc', 'Quy trình riêng mã này: ' + qtTomTat(r.tuy_chinh)));
   if (!xongHet) box.appendChild(thanhNho(r));
   const todo = el('div', 'jx-col jx-drop'), done = el('div', 'jx-col jx-drop');
   const hT = el('h3', null, 'Cần xử lý'), hD = el('h3', null, 'Đã xong'); let nT = 0, nD = 0;
   todo.appendChild(hT); done.appendChild(hD);
-  if (!xongHet) { hT.appendChild(el('em', 'jx-hint', 'kéo bước sang Đã xong · bước của Máy tự chuyển khi máy xong')); }
+  if (!xongHet) { hT.appendChild(el('em', 'jx-hint', 'kéo bước sang Đã xong · bấm tên người để đổi / bỏ / thêm bước')); }
   const chon = el('div', 'jx-chon'); chon.hidden = true;
-  ds.forEach(([ai, ten], i) => {
-    const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && (n === r.buoc || n === cap);
-    const dlMap = dlDoc(r.dang_lam), lam = !xong && dlMap.has(n);
-    const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next') + (lam ? ' lam' : ''));
-    line.append(el('span', 'n', xong ? '✓' : String(n)), el('span', 't', xong ? n + '. ' + ten : ten), xong || xongHet ? el('span') : nutDL(r, n, dlMap), nguoi(n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : ai));
+  const dlMap = dlDoc(r.dang_lam);
+  ds.forEach((d, i) => {
+    const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && !d.bo && (n === r.buoc || n === cap);
+    const lam = !xong && dlMap.has(n);
+    const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next') + (lam ? ' lam' : '') + (d.bo ? ' bo' : '') + (d.phu ? ' phu' : ''));
+    const t = el('span', 't', xong ? d.k + '. ' + d.ten : d.ten);
+    if (d.phu) t.appendChild(el('em', 'jx-tag', 'phụ'));
+    if (d.bo) t.appendChild(el('em', 'jx-tag bo', 'bỏ qua'));
+    const ai = n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : d.ai;
+    const sua = !xongHet && !xong;                                   // chỉ sửa bước đang làm / chưa tới
+    const chip = nguoi(ai);
+    if (sua) { chip.classList.add('sua'); chip.setAttribute('role', 'button'); chip.tabIndex = 0; chip.title = 'Đổi người làm / bỏ qua / thêm bước sau'; }
+    line.append(el('span', 'n', xong ? '✓' : d.k), t, xong || xongHet || d.bo ? el('span') : nutDL(r, n, dlMap), chip);
     if (!xongHet) {
-      line.draggable = true;
-      line.addEventListener('dragstart', (e) => { keo = {ma: r.ma_ban, n, xong}; line.classList.add('keo'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(n)); });
-      line.addEventListener('dragend', () => { line.classList.remove('keo'); keo = null; document.querySelectorAll('.jx-drop.over').forEach((x) => x.classList.remove('over')); });
+      if (!d.bo) {
+        line.draggable = true;
+        line.addEventListener('dragstart', (e) => { keo = {ma: r.ma_ban, n, xong}; line.classList.add('keo'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(n)); });
+        line.addEventListener('dragend', () => { line.classList.remove('keo'); keo = null; document.querySelectorAll('.jx-drop.over').forEach((x) => x.classList.remove('over')); });
+      }
       const b = el('button', 'jx-tick', xong ? '↺' : '✓'); b.type = 'button';
-      b.title = xong ? 'Mở lại từ bước ' + n : 'Xong tới bước ' + n; b.setAttribute('aria-label', b.title);
+      b.title = xong ? 'Mở lại từ bước ' + d.k : 'Xong tới bước ' + d.k; b.setAttribute('aria-label', b.title);
       b.onclick = () => (xong ? moLai(r, n) : xongToi(r, n, chon));
-      if (now || n === r.buoc - 1) line.appendChild(b); else line.appendChild(el('span'));   // ✓ ở bước đang làm, ↺ ở bước vừa xong; bước khác thì kéo thả
+      if (!d.bo && (now || n === r.buoc - 1)) line.appendChild(b); else line.appendChild(el('span'));
     }
-    if (xongHet && n === ds.length) { const u = el('button', 'jx-tick', '↺'); u.type = 'button'; u.title = 'Mở lại mã (về bước ' + n + ')'; u.setAttribute('aria-label', u.title); u.onclick = () => moLai(r, n); line.append(el('span'), u); }
-    if (xong) { done.appendChild(line); nD++; } else { todo.appendChild(line); nT++; }
+    if (xongHet && n === ds.length) { const u = el('button', 'jx-tick', '↺'); u.type = 'button'; u.title = 'Mở lại mã (về bước ' + d.k + ')'; u.setAttribute('aria-label', u.title); u.onclick = () => moLai(r, n); line.append(el('span'), u); }
+    const wrap = xong ? done : todo;
+    wrap.appendChild(line);
+    if (sua) {
+      const ed = suaBuoc(r, d);
+      ed.hidden = true; wrap.appendChild(ed);
+      const mo = () => { ed.hidden = !ed.hidden; };
+      chip.addEventListener('click', (e) => { e.stopPropagation(); mo(); });
+      chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mo(); } });
+    }
+    if (xong) nD++; else nT++;
   });
   hT.appendChild(el('span', null, String(nT))); hD.appendChild(el('span', null, String(nD)));
   if (!nT) todo.appendChild(el('p', 'jx-none', 'Không còn bước nào.'));
@@ -388,17 +486,57 @@ function chiTiet(r) {
   return box;
 }
 
-// Xong tới bước n → sang bước n+1 (bước có nhánh thì hỏi có lỗi không)
+// Khung sửa 1 bước: đổi người làm · bỏ qua / khôi phục · thêm bước phụ sau bước này
+function suaBuoc(r, d) {
+  const w = el('div', 'jx-sua');
+  const sN = el('select'); QT_NGUOI.forEach((x) => sN.appendChild(new Option(x, x))); sN.value = QT_NGUOI.includes(d.ai) ? d.ai : 'Thiện';
+  sN.setAttribute('aria-label', 'Người làm bước ' + d.k);
+  const bN = el('button', 'btn', 'Đổi người'); bN.type = 'button';
+  bN.onclick = () => { if (sN.value !== d.ai) chay(() => luuTC(r, qtDoiNguoi(r.tuy_chinh, d.k, sN.value), 'Tuỳ chỉnh: bước ' + d.k + ' giao cho ' + sN.value)); };
+  const bB = el('button', 'btn ' + (d.bo ? '' : 'warn'), d.bo ? 'Khôi phục bước' : 'Bỏ qua bước'); bB.type = 'button';
+  bB.onclick = () => chay(() => luuTC(r, qtBo(r.tuy_chinh, d.k, !d.bo), 'Tuỳ chỉnh: ' + (d.bo ? 'khôi phục' : 'bỏ qua') + ' bước ' + d.k));
+  const bT = el('button', 'btn', '+ Thêm bước sau'); bT.type = 'button';
+  const f = el('div', 'jx-them'); f.hidden = true;
+  const iT = el('input'); iT.type = 'text'; iT.placeholder = 'Việc cần làm (vd: xuất thêm size 11x14)'; iT.setAttribute('aria-label', 'Tên bước phụ');
+  const sT = el('select'); QT_NGUOI.forEach((x) => sT.appendChild(new Option(x, x))); sT.setAttribute('aria-label', 'Người làm bước phụ');
+  const bL = el('button', 'btn pri', 'Thêm'); bL.type = 'button';
+  bL.onclick = () => { const ten = iT.value.trim(); if (!ten) { toast('Nhập việc cần làm.', 'bad'); return; } chay(() => luuTC(r, qtThem(r.tuy_chinh, d.k, sT.value, ten), 'Tuỳ chỉnh: thêm bước sau ' + d.k + ' (' + sT.value + ': ' + ten + ')')); };
+  f.append(iT, sT, bL);
+  bT.onclick = () => { f.hidden = !f.hidden; if (!f.hidden) iT.focus(); };
+  const hang1 = el('div', 'jx-sua1'); hang1.append(el('span', null, 'Bước ' + d.k + ':'), sN, bN, bB, bT);
+  w.append(hang1, f);
+  return w;
+}
+
+// Ghi tuỳ chỉnh quy trình của mã (cột R) + tính lại bước / người giữ / tổng bước / đang làm
+async function luuTC(r, tcMoi, viec) {
+  const cur = await api(`values/${CONFIG.TAB}!A${r._row}:R${r._row}`);
+  const c = (cur.values || [[]])[0] || [];
+  if (c[0] !== r.ma_ban) { await tai(); throw new Error('Bảng vừa thay đổi, đã tải lại. Thử lại thao tác.'); }
+  const truoc = Number(c[5]) || 0, o = qtAp(r.ban, c[17] || '', tcMoi, truoc, c[16] || '', c[11] || '');
+  const row = COLS.map((k, i) => c[i] == null ? '' : c[i]);
+  const dat = (k, v) => { row[COLS.indexOf(k)] = v; };
+  dat('buoc', o.buoc); dat('tong_buoc', o.tong_buoc); if (o.ten_buoc != null) dat('ten_buoc', o.ten_buoc); if (o.nguoi_giu != null) dat('nguoi_giu', o.nguoi_giu);
+  if (o.trang_thai) dat('trang_thai', o.trang_thai);
+  if (o.buoc !== truoc) dat('vao_buoc_luc', bayGio());
+  dat('cap_nhat', bayGio() + ' ' + (S.email || ''));
+  await api(`values/${CONFIG.TAB}!A${r._row}:O${r._row}?valueInputOption=USER_ENTERED`, {method: 'PUT', body: JSON.stringify({values: [row]})});
+  await api(`values/${CONFIG.TAB}!Q${r._row}:R${r._row}?valueInputOption=RAW`, {method: 'PUT', body: JSON.stringify({values: [[o.dang_lam, tcMoi]]})});
+  await api(`values/${CONFIG.LOG}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[bayGio(), S.email, r.ma_ban, viec, truoc, o.buoc, o.nguoi_giu != null ? o.nguoi_giu : c[8], '']]})});
+  await tai();
+}
+
+// Xong tới bước n → sang bước kế (bỏ qua bước bị bỏ; bước có nhánh thì hỏi có lỗi không)
 function xongToi(r, n, chon) {
-  const ds = BUOC[r.ban] || [], nhanh = (NHANH[r.ban] || {})[n];
+  const ds = qtDs(r.ban, r.tuy_chinh), nhanh = qtNhanh(r.ban, ds, n);
   const di = (toi, viec) => chay(() => ghi(r, sangBuoc(r, toi), viec));
-  if (!nhanh) { di(n + 1, n >= ds.length ? 'Hoàn tất mã' : 'Xong bước ' + n); return; }
-  chon.replaceChildren(el('span', null, 'Bước ' + n + ' — ' + ds[n - 1][1] + ':'));
-  nhanh.forEach(([l, toi], i) => { const b = el('button', 'btn ' + (i ? 'warn' : 'pri'), l); b.type = 'button'; b.onclick = () => { chon.hidden = true; di(toi, 'Xong bước ' + n + ' · ' + l); }; chon.appendChild(b); });
+  if (!nhanh) { di(n + 1, qtKeTiep(ds, n + 1) > ds.length ? 'Hoàn tất mã' : 'Xong bước ' + ds[n - 1].k); return; }
+  chon.replaceChildren(el('span', null, 'Bước ' + ds[n - 1].k + ' — ' + ds[n - 1].ten + ':'));
+  nhanh.forEach(([l, toi], i) => { const b = el('button', 'btn ' + (i ? 'warn' : 'pri'), l); b.type = 'button'; b.onclick = () => { chon.hidden = true; di(toi, 'Xong bước ' + ds[n - 1].k + ' · ' + l); }; chon.appendChild(b); });
   const h = el('button', 'btn', 'Huỷ'); h.type = 'button'; h.onclick = () => { chon.hidden = true; }; chon.appendChild(h);
   chon.hidden = false; chon.scrollIntoView({block: 'nearest'});
 }
-function moLai(r, n) { chay(() => ghi(r, sangBuoc(r, n), 'Mở lại bước ' + n)); }
+function moLai(r, n) { chay(() => ghi(r, sangBuoc(r, n), 'Mở lại bước ' + (qtDs(r.ban, r.tuy_chinh)[n - 1] || {}).k)); }
 async function chay(fn) { try { await fn(); toast('Đã lưu', 'ok'); } catch (e) { toast(e.message, 'bad'); } }
 
 // Dòng nhỏ: Kẹt · Chờ anh · Ghi chú (ít dùng)
