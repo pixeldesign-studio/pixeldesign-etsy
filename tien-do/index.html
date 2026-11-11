@@ -191,7 +191,7 @@ button,select,input{font:inherit;color:inherit}
     </div>
     <div class="jx-tools" id="tools" hidden>
       <span class="jx-user" id="user"></span>
-      <label class="chk" style="padding:0;font-size:12px;color:var(--mute)"><input type="checkbox" id="show-done"> Hiện mã đã xong</label>
+      <label class="chk" style="padding:0;font-size:12px;color:var(--mute)"><input type="checkbox" id="show-done"> Chỉ mã đã xong</label>
       <button class="btn" id="btn-reload" type="button">Tải lại</button>
       <button class="btn pri" id="btn-add" type="button">+ Thêm mã</button>
       <button class="btn" id="btn-out" type="button">Đăng xuất</button>
@@ -449,9 +449,9 @@ function ve() {
   $('n-run').textContent = run.length;
   $('n-need').textContent = run.filter(laCan).length;
   $('n-stuck').textContent = run.filter((r) => r.trang_thai === 'KET').length;
-  const ds = ($('show-done').checked ? S.rows : run).slice().sort((a, b) =>
+  const ds = ($('show-done').checked ? S.rows.filter((r) => r.trang_thai === 'XONG') : S.rows).slice().sort((a, b) =>
     (a.trang_thai === 'XONG') - (b.trang_thai === 'XONG') || laCan(b) - laCan(a) || (b.trang_thai === 'KET') - (a.trang_thai === 'KET') || (soNgay(b.vao_buoc_luc) || 0) - (soNgay(a.vao_buoc_luc) || 0));
-  $('rows').replaceChildren(...(ds.length ? ds.map(hang) : [el('div', 'jx-msg', 'Chưa có mã nào đang chạy.')]));
+  $('rows').replaceChildren(...(ds.length ? ds.map(hang) : [el('div', 'jx-msg', $('show-done').checked ? 'Chưa có mã nào xong.' : 'Chưa có mã nào.')]));
 }
 
 function hang(r) {
