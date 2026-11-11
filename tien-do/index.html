@@ -75,7 +75,7 @@ button,select,input{font:inherit;color:inherit}
 .jx-col{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
 .jx-col h3{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .jx-col h3 span{color:var(--fg);margin-left:6px}
-.jx-st{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;font-size:13px;color:var(--mute)}
+.jx-st{display:grid;grid-template-columns:22px minmax(0,1fr) auto 28px;gap:10px;align-items:center;padding:6px 0;font-size:13px;color:var(--mute)}
 .jx-st .n{font-variant-numeric:tabular-nums;color:var(--dim);text-align:right}
 .jx-st.now{color:var(--fg)} .jx-st.now .n{color:var(--acc2);font-weight:600}
 .jx-st.now .t::after{content:"Đang làm";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--acc2)}
@@ -98,6 +98,20 @@ button,select,input{font:inherit;color:inherit}
 .jx-login p{margin:0;color:var(--mute)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1b1926;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:calc(100vw - 32px);z-index:20}
 .toast.bad{border-color:var(--bad)} .toast.ok{border-color:var(--ok)}
+.jx-st[draggable=true]{cursor:grab;border-radius:8px;padding-inline:4px}
+.jx-st[draggable=true]:hover{background:rgba(255,255,255,.04)}
+.jx-st.keo{opacity:.4}
+.jx-drop.over{border-color:var(--acc2);background:rgba(139,92,246,.12)}
+.jx-hint{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none;color:var(--dim);margin-left:8px;font-size:11px}
+.jx-tick{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--acc2);font-size:13px;cursor:pointer;padding:0}
+.jx-tick:hover{background:rgba(139,92,246,.25);color:#fff}
+.jx-chon{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;padding:12px 14px;border:1px solid rgba(246,184,75,.4);border-radius:14px;background:rgba(246,184,75,.06)}
+.jx-nho{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.jx-chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;font-size:12px;color:var(--mute);cursor:pointer}
+.jx-chip.on{border-color:var(--warn);color:var(--warn)}
+.jx-gc{flex:1;min-width:180px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px}
+.jx-may{color:var(--may)} .jx-may.bad{color:var(--bad)}
+.jx-flag.may{background:var(--may);color:#04172a;box-shadow:0 0 14px rgba(56,189,248,.45)}
 @media (max-width:720px){
   .jx-head{display:none}
   .jx-row{grid-template-columns:1fr auto;gap:10px 12px}
@@ -237,11 +251,12 @@ async function api(path, opt) {
 }
 async function tai() {
   try {
-    const j = await api(`values/${CONFIG.TAB}!A1:O500`);
+    const j = await api(`values/${CONFIG.TAB}!A1:P500`);   // P = may_bao (Pixie ghi)
     const v = j.values || [];
     S.rows = v.slice(1).map((r, i) => {
       const o = {_row: i + 2};
       COLS.forEach((c, k) => { o[c] = r[k] == null ? '' : String(r[k]); });
+      o.may_bao = r[15] == null ? '' : String(r[15]);
       o.buoc = Number(o.buoc) || 0; o.tong_buoc = Number(o.tong_buoc) || (BUOC[o.ban] || []).length;
       return o;
     }).filter((o) => o.ma_ban);
@@ -293,6 +308,7 @@ function hang(r) {
   const c1 = el('div'); const code = el('div', 'jx-code');
   code.append(el('span', 'jx-chev'), el('span', null, r.ma + ' · ' + r.ban));
   if (xong) code.appendChild(el('span', 'jx-flag ok', 'Xong')); else if (ket) code.appendChild(el('span', 'jx-flag bad', 'Kẹt')); else if (can) code.appendChild(el('span', 'jx-flag', 'Chờ anh'));
+  const mb = maySo(r); if (mb) code.appendChild(el('span', 'jx-flag ' + (mb.xong ? 'may' : 'bad'), mb.xong ? 'Máy xong' : 'Máy kẹt'));
   c1.append(code, el('div', 'jx-name', r.ten_mau + ' · ' + r.nuoc));
 
   const c2 = el('div', 'c2'); const seg = el('div', 'jx-seg');
@@ -313,60 +329,76 @@ function hang(r) {
   return item;
 }
 
+// Kéo thả (11/11): kéo 1 bước từ "Cần xử lý" sang "Đã xong" = xong tới bước đó; kéo ngược lại = mở lại bước đó.
+// Điện thoại: bấm ✓ ở bước / bấm ↺ ở bước đã xong. Bước có nhánh (check listing) hỏi "có lỗi không".
+let keo = null;
+function maySo(r) { const m = /^Máy (xong|kẹt) bước (\d+).*@(\d+)\s*$/.exec(r.may_bao || ''); return m && Number(m[3]) === r.buoc && r.trang_thai !== 'XONG' ? {xong: m[1] === 'xong', buoc: m[2]} : null; }
+
 function chiTiet(r) {
   const box = el('div', 'jx-detail');
   const ds = BUOC[r.ban] || [], xongHet = r.trang_thai === 'XONG';
   const cap = (SONG[r.ban] || {})[r.buoc];
-  if (r.ghi_chu) box.appendChild(el('div', 'jx-full', 'Ghi chú: ' + r.ghi_chu));
-  if (!xongHet) box.appendChild(khungSua(r));
-  const todo = el('div', 'jx-col'), done = el('div', 'jx-col');
+  const mb = maySo(r);
+  if (mb) box.appendChild(el('div', 'jx-full jx-may' + (mb.xong ? '' : ' bad'), mb.xong ? 'Máy báo xong bước ' + mb.buoc + ' — Thiện kiểm rồi kéo bước sang Đã xong.' : 'Máy kẹt ở bước ' + mb.buoc + ' — xem thread mã.'));
+  if (!xongHet) box.appendChild(thanhNho(r));
+  const todo = el('div', 'jx-col jx-drop'), done = el('div', 'jx-col jx-drop');
   const hT = el('h3', null, 'Cần xử lý'), hD = el('h3', null, 'Đã xong'); let nT = 0, nD = 0;
   todo.appendChild(hT); done.appendChild(hD);
+  if (!xongHet) { hT.appendChild(el('em', 'jx-hint', 'kéo bước sang Đã xong')); }
+  const chon = el('div', 'jx-chon'); chon.hidden = true;
   ds.forEach(([ai, ten], i) => {
     const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && (n === r.buoc || n === cap);
     const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next'));
     line.append(el('span', 'n', xong ? '✓' : String(n)), el('span', 't', xong ? n + '. ' + ten : ten), nguoi(n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : ai));
+    if (!xongHet) {
+      line.draggable = true;
+      line.addEventListener('dragstart', (e) => { keo = {ma: r.ma_ban, n, xong}; line.classList.add('keo'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(n)); });
+      line.addEventListener('dragend', () => { line.classList.remove('keo'); keo = null; document.querySelectorAll('.jx-drop.over').forEach((x) => x.classList.remove('over')); });
+      const b = el('button', 'jx-tick', xong ? '↺' : '✓'); b.type = 'button';
+      b.title = xong ? 'Mở lại từ bước ' + n : 'Xong tới bước ' + n; b.setAttribute('aria-label', b.title);
+      b.onclick = () => (xong ? moLai(r, n) : xongToi(r, n, chon));
+      if (now || n === r.buoc - 1) line.appendChild(b); else line.appendChild(el('span'));   // ✓ ở bước đang làm, ↺ ở bước vừa xong; bước khác thì kéo thả
+    }
     if (xong) { done.appendChild(line); nD++; } else { todo.appendChild(line); nT++; }
   });
   hT.appendChild(el('span', null, String(nT))); hD.appendChild(el('span', null, String(nD)));
   if (!nT) todo.appendChild(el('p', 'jx-none', 'Không còn bước nào.'));
   if (!nD) done.appendChild(el('p', 'jx-none', 'Chưa có bước nào xong.'));
-  box.append(todo, done);
+  if (!xongHet) {
+    const tha = (vung, sangXong) => {
+      vung.addEventListener('dragover', (e) => { if (keo && keo.ma === r.ma_ban && keo.xong !== sangXong) { e.preventDefault(); vung.classList.add('over'); } });
+      vung.addEventListener('dragleave', () => vung.classList.remove('over'));
+      vung.addEventListener('drop', (e) => { e.preventDefault(); vung.classList.remove('over'); if (!keo || keo.ma !== r.ma_ban) return; const n = keo.n; keo = null; sangXong ? xongToi(r, n, chon) : moLai(r, n); });
+    };
+    tha(done, true); tha(todo, false);
+  }
+  box.append(chon, todo, done);
   return box;
 }
 
-function khungSua(r) {
-  const ds = BUOC[r.ban] || [], id = r.ma_ban;
-  const box = el('div', 'jx-edit');
-  box.appendChild(el('h3', null, 'Cập nhật tiến độ'));
-  const chay = async (btns, fn) => { btns.forEach((b) => { b.disabled = true; }); try { await fn(); toast('Đã lưu ' + r.ma + ' ' + r.ban, 'ok'); } catch (e) { toast(e.message, 'bad'); btns.forEach((b) => { b.disabled = false; }); } };
+// Xong tới bước n → sang bước n+1 (bước có nhánh thì hỏi có lỗi không)
+function xongToi(r, n, chon) {
+  const ds = BUOC[r.ban] || [], nhanh = (NHANH[r.ban] || {})[n];
+  const di = (toi, viec) => chay(() => ghi(r, sangBuoc(r, toi), viec));
+  if (!nhanh) { di(n + 1, n >= ds.length ? 'Hoàn tất mã' : 'Xong bước ' + n); return; }
+  chon.replaceChildren(el('span', null, 'Bước ' + n + ' — ' + ds[n - 1][1] + ':'));
+  nhanh.forEach(([l, toi], i) => { const b = el('button', 'btn ' + (i ? 'warn' : 'pri'), l); b.type = 'button'; b.onclick = () => { chon.hidden = true; di(toi, 'Xong bước ' + n + ' · ' + l); }; chon.appendChild(b); });
+  const h = el('button', 'btn', 'Huỷ'); h.type = 'button'; h.onclick = () => { chon.hidden = true; }; chon.appendChild(h);
+  chon.hidden = false; chon.scrollIntoView({block: 'nearest'});
+}
+function moLai(r, n) { chay(() => ghi(r, sangBuoc(r, n), 'Mở lại bước ' + n)); }
+async function chay(fn) { try { await fn(); toast('Đã lưu', 'ok'); } catch (e) { toast(e.message, 'bad'); } }
 
-  const quick = el('div', 'jx-quick'); const all = [];
-  const nhanh = (NHANH[r.ban] || {})[r.buoc];
-  const them = (label, n, cls) => { const b = el('button', 'btn ' + cls, label); b.type = 'button'; all.push(b);
-    b.onclick = () => chay(all, () => ghi(r, sangBuoc(r, n), n > ds.length ? 'Hoàn tất mã' : 'Chuyển bước')); quick.appendChild(b); };
-  if (nhanh) nhanh.forEach(([l, n], i) => them(l, n, i === 0 ? 'pri' : 'warn'));
-  else if (r.buoc >= ds.length) them('Xong bước ' + r.buoc + ' → hoàn tất mã', ds.length + 1, 'pri');
-  else them('Xong bước ' + r.buoc + ' → sang bước ' + (r.buoc + 1), r.buoc + 1, 'pri');
-  box.appendChild(quick);
-
-  const f = el('div', 'jx-fields');
-  const fld = (label, node, wide) => { const l = el('label', 'fld' + (wide ? ' wide' : ''), label); node.id = node.id || ('f' + Math.random().toString(36).slice(2)); l.htmlFor = node.id; l.appendChild(node); return l; };
-  const sB = el('select'); ds.forEach(([, ten], i) => { const o = new Option((i + 1) + '. ' + ten, i + 1); sB.appendChild(o); }); sB.value = r.buoc;
-  const sN = el('select'); [...new Set([r.nguoi_giu, ...NGUOI].filter(Boolean))].forEach((n) => sN.appendChild(new Option(n, n))); sN.value = r.nguoi_giu;
-  sB.onchange = () => { const d = sangBuoc(r, Number(sB.value)); if (![...sN.options].some((o) => o.value === d.nguoi_giu)) sN.appendChild(new Option(d.nguoi_giu, d.nguoi_giu)); sN.value = d.nguoi_giu; };
-  const cA = el('input'); cA.type = 'checkbox'; cA.checked = laCan(r);
-  const cK = el('input'); cK.type = 'checkbox'; cK.checked = r.trang_thai === 'KET';
-  const lA = el('label', 'chk'); lA.append(cA, 'Chờ anh Hải');
-  const lK = el('label', 'chk'); lK.append(cK, 'Kẹt');
-  const iG = el('input'); iG.type = 'text'; iG.value = r.ghi_chu; iG.id = 'gc-' + id;
-  f.append(fld('Chuyển tới bước', sB), fld('Người giữ', sN), lA, lK, fld('Ghi chú (1 câu)', iG, true));
-  box.appendChild(f);
-  const save = el('button', 'btn', 'Lưu thay đổi'); save.type = 'button'; all.push(save);
-  save.onclick = () => chay(all, () => { const n = Number(sB.value);
-    return ghi(r, {buoc: n, ten_buoc: ds[n-1] ? ds[n-1][1] : r.ten_buoc, nguoi_giu: sN.value, can_anh: cA.checked ? 'CÓ' : '', trang_thai: cK.checked ? 'KET' : 'DANG_LAM', ghi_chu: iG.value.trim()}, 'Sửa tay'); });
-  const q2 = el('div', 'jx-quick'); q2.appendChild(save); box.appendChild(q2);
-  return box;
+// Dòng nhỏ: Kẹt · Chờ anh · Ghi chú (ít dùng)
+function thanhNho(r) {
+  const w = el('div', 'jx-nho');
+  const chip = (nhan, bat, doi) => { const b = el('button', 'jx-chip' + (bat ? ' on' : ''), nhan); b.type = 'button'; b.setAttribute('aria-pressed', bat ? 'true' : 'false'); b.onclick = () => chay(() => ghi(r, doi, 'Sửa tay')); return b; };
+  w.append(chip('Kẹt', r.trang_thai === 'KET', {trang_thai: r.trang_thai === 'KET' ? 'DANG_LAM' : 'KET'}),
+           chip('Chờ anh Hải', laCan(r), {can_anh: laCan(r) ? '' : 'CÓ'}));
+  const g = el('input', 'jx-gc'); g.type = 'text'; g.value = r.ghi_chu; g.placeholder = 'Ghi chú (Enter để lưu)'; g.setAttribute('aria-label', 'Ghi chú');
+  g.addEventListener('keydown', (e) => { if (e.key === 'Enter' && g.value.trim() !== r.ghi_chu) chay(() => ghi(r, {ghi_chu: g.value.trim()}, 'Sửa ghi chú')); });
+  w.appendChild(g);
+  return w;
 }
 
 /* ---------- Thêm mã ---------- */
