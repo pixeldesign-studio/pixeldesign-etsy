@@ -349,12 +349,12 @@ function chiTiet(r) {
   const ds = BUOC[r.ban] || [], xongHet = r.trang_thai === 'XONG';
   const cap = (SONG[r.ban] || {})[r.buoc];
   const mb = maySo(r);
-  if (mb) box.appendChild(el('div', 'jx-full jx-may' + (mb.xong ? '' : ' bad'), mb.xong ? 'Máy báo xong bước ' + mb.buoc + ' — Thiện kiểm rồi kéo bước sang Đã xong.' : 'Máy kẹt ở bước ' + mb.buoc + ' — xem thread mã.'));
+  if (mb) box.appendChild(el('div', 'jx-full jx-may' + (mb.xong ? '' : ' bad'), mb.xong ? 'Máy đã xong bước ' + mb.buoc + ' (song song) — Thiện xong phần mình rồi kéo bước.' : 'Máy kẹt ở bước ' + mb.buoc + ' — xem thread mã (Pixie đã ghi nhật ký).'));
   if (!xongHet) box.appendChild(thanhNho(r));
   const todo = el('div', 'jx-col jx-drop'), done = el('div', 'jx-col jx-drop');
   const hT = el('h3', null, 'Cần xử lý'), hD = el('h3', null, 'Đã xong'); let nT = 0, nD = 0;
   todo.appendChild(hT); done.appendChild(hD);
-  if (!xongHet) { hT.appendChild(el('em', 'jx-hint', 'kéo bước sang Đã xong')); }
+  if (!xongHet) { hT.appendChild(el('em', 'jx-hint', 'kéo bước sang Đã xong · bước của Máy tự chuyển khi máy xong')); }
   const chon = el('div', 'jx-chon'); chon.hidden = true;
   ds.forEach(([ai, ten], i) => {
     const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && (n === r.buoc || n === cap);
@@ -370,6 +370,7 @@ function chiTiet(r) {
       b.onclick = () => (xong ? moLai(r, n) : xongToi(r, n, chon));
       if (now || n === r.buoc - 1) line.appendChild(b); else line.appendChild(el('span'));   // ✓ ở bước đang làm, ↺ ở bước vừa xong; bước khác thì kéo thả
     }
+    if (xongHet && n === ds.length) { const u = el('button', 'jx-tick', '↺'); u.type = 'button'; u.title = 'Mở lại mã (về bước ' + n + ')'; u.setAttribute('aria-label', u.title); u.onclick = () => moLai(r, n); line.append(el('span'), u); }
     if (xong) { done.appendChild(line); nD++; } else { todo.appendChild(line); nT++; }
   });
   hT.appendChild(el('span', null, String(nT))); hD.appendChild(el('span', null, String(nD)));
