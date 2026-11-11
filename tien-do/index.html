@@ -75,10 +75,10 @@ button,select,input{font:inherit;color:inherit}
 .jx-col{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
 .jx-col h3{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .jx-col h3 span{color:var(--fg);margin-left:6px}
-.jx-st{display:grid;grid-template-columns:22px minmax(0,1fr) auto 28px;gap:10px;align-items:center;padding:6px 0;font-size:13px;color:var(--mute)}
+.jx-st{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto 28px;gap:10px;align-items:center;padding:6px 0;font-size:13px;color:var(--mute)}
 .jx-st .n{font-variant-numeric:tabular-nums;color:var(--dim);text-align:right}
 .jx-st.now{color:var(--fg)} .jx-st.now .n{color:var(--acc2);font-weight:600}
-.jx-st.now .t::after{content:"Đang làm";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--acc2)}
+.jx-st.now .t::after{content:"Tới lượt";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--acc2)}
 .jx-st.done .n{color:var(--acc2)}
 .jx-st .jx-who{font-size:12px;padding:2px 8px}
 .jx-st.done .jx-who,.jx-st.next .jx-who{opacity:.7}
@@ -112,6 +112,12 @@ button,select,input{font:inherit;color:inherit}
 .jx-gc{flex:1;min-width:180px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px}
 .jx-may{color:var(--may)} .jx-may.bad{color:var(--bad)}
 .jx-flag.may{background:var(--may);color:#04172a;box-shadow:0 0 14px rgba(56,189,248,.45)}
+.jx-dl{border:1px dashed var(--line);background:transparent;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:500;color:var(--dim);cursor:pointer;white-space:nowrap}
+.jx-dl:hover{border-color:var(--acc2);color:var(--acc2)}
+.jx-dl.on{border:0;color:#fff;font-weight:600;background:linear-gradient(135deg,#7c4dff,#a78bfa);box-shadow:0 0 12px rgba(124,77,255,.55)}
+.jx-st.lam .t{color:var(--fg)}
+.jx-st.now.lam .t::after{content:none}
+.jx-step i{font-style:normal;color:var(--acc2);font-weight:600}
 @media (max-width:720px){
   .jx-head{display:none}
   .jx-row{grid-template-columns:1fr auto;gap:10px 12px}
@@ -251,12 +257,13 @@ async function api(path, opt) {
 }
 async function tai() {
   try {
-    const j = await api(`values/${CONFIG.TAB}!A1:P500`);   // P = may_bao (Pixie ghi)
+    const j = await api(`values/${CONFIG.TAB}!A1:Q500`);   // P = may_bao (Pixie ghi) · Q = dang_lam (Thiện đánh dấu)
     const v = j.values || [];
     S.rows = v.slice(1).map((r, i) => {
       const o = {_row: i + 2};
       COLS.forEach((c, k) => { o[c] = r[k] == null ? '' : String(r[k]); });
       o.may_bao = r[15] == null ? '' : String(r[15]);
+      o.dang_lam = r[16] == null ? '' : String(r[16]);
       o.buoc = Number(o.buoc) || 0; o.tong_buoc = Number(o.tong_buoc) || (BUOC[o.ban] || []).length;
       return o;
     }).filter((o) => o.ma_ban);
@@ -272,6 +279,8 @@ async function ghi(r, doi, viec) {
   const moi = {...r, ...doi, cap_nhat: bayGio() + ' ' + (S.email || '')};
   if (moi.buoc !== truoc) moi.vao_buoc_luc = bayGio();
   await api(`values/${CONFIG.TAB}!A${r._row}:O${r._row}?valueInputOption=USER_ENTERED`, {method: 'PUT', body: JSON.stringify({values: [COLS.map((k) => moi[k])]})});
+  const dl = dlDoc(r.dang_lam), con = moi.trang_thai === 'XONG' ? new Map() : new Map([...dl].filter(([n]) => n >= moi.buoc));   // bước đã xong thì bỏ dấu đang làm
+  if (con.size !== dl.size) await api(`values/${CONFIG.TAB}!Q${r._row}?valueInputOption=RAW`, {method: 'PUT', body: JSON.stringify({values: [[dlViet(con)]]})});
   await api(`values/${CONFIG.LOG}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[bayGio(), S.email, r.ma_ban, viec, truoc, moi.buoc, moi.nguoi_giu, moi.ghi_chu]]})});
   await tai();
 }
@@ -315,6 +324,7 @@ function hang(r) {
   seg.setAttribute('role', 'img'); seg.setAttribute('aria-label', 'Bước ' + r.buoc + ' trên ' + r.tong_buoc);
   for (let i = 1; i <= r.tong_buoc; i++) seg.appendChild(el('i', xong || i < r.buoc ? 'on' : i === r.buoc ? 'now' : ''));
   const step = el('div', 'jx-step'); step.append(el('b', null, (xong ? r.tong_buoc : r.buoc) + '/' + r.tong_buoc), '  ' + r.ten_buoc);
+  const dlh = [...dlDoc(r.dang_lam).keys()]; if (!xong && dlh.length) step.append(' · ', el('i', null, 'đang làm bước ' + dlh.join(', ')));
   c2.append(seg, step);
 
   const c3 = el('div'); if (!xong) c3.appendChild(nguoi(r.nguoi_giu || 'Chưa rõ'));
@@ -348,8 +358,9 @@ function chiTiet(r) {
   const chon = el('div', 'jx-chon'); chon.hidden = true;
   ds.forEach(([ai, ten], i) => {
     const n = i + 1, xong = xongHet || n < r.buoc, now = !xong && (n === r.buoc || n === cap);
-    const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next'));
-    line.append(el('span', 'n', xong ? '✓' : String(n)), el('span', 't', xong ? n + '. ' + ten : ten), nguoi(n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : ai));
+    const dlMap = dlDoc(r.dang_lam), lam = !xong && dlMap.has(n);
+    const line = el('div', 'jx-st ' + (now ? 'now' : xong ? 'done' : 'next') + (lam ? ' lam' : ''));
+    line.append(el('span', 'n', xong ? '✓' : String(n)), el('span', 't', xong ? n + '. ' + ten : ten), xong || xongHet ? el('span') : nutDL(r, n, dlMap), nguoi(n === r.buoc && !xong && r.nguoi_giu ? r.nguoi_giu : ai));
     if (!xongHet) {
       line.draggable = true;
       line.addEventListener('dragstart', (e) => { keo = {ma: r.ma_ban, n, xong}; line.classList.add('keo'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(n)); });
@@ -399,6 +410,28 @@ function thanhNho(r) {
   g.addEventListener('keydown', (e) => { if (e.key === 'Enter' && g.value.trim() !== r.ghi_chu) chay(() => ghi(r, {ghi_chu: g.value.trim()}, 'Sửa ghi chú')); });
   w.appendChild(g);
   return w;
+}
+
+// Đánh dấu ĐANG LÀM từng bước (Thiện bấm) — cột Q: "9@11/11 14:05;10@11/11 15:00"
+function dlDoc(s) { const m = new Map(); String(s || '').split(';').forEach((x) => { const k = /^\s*(\d+)@(.*)$/.exec(x); if (k) m.set(Number(k[1]), k[2].trim()); }); return m; }
+function dlViet(m) { return [...m].sort((a, b) => a[0] - b[0]).map(([n, t]) => n + '@' + t).join(';'); }
+function nutDL(r, n, m) {
+  const on = m.has(n), b = el('button', 'jx-dl' + (on ? ' on' : ''), on ? 'Đang làm' : 'Bắt đầu');
+  b.type = 'button'; b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  b.title = on ? 'Đang làm từ ' + m.get(n) + ' — bấm để bỏ' : 'Đánh dấu bắt đầu làm bước ' + n;
+  b.draggable = false; b.addEventListener('mousedown', (e) => e.stopPropagation());
+  b.onclick = (e) => { e.stopPropagation(); b.disabled = true; chay(() => datDangLam(r, n)).finally(() => { b.disabled = false; }); };
+  return b;
+}
+async function datDangLam(r, n) {
+  const cur = await api(`values/${CONFIG.TAB}!A${r._row}:Q${r._row}`);   // đọc lại dòng, tránh ghi đè người khác
+  const c = (cur.values || [[]])[0] || [];
+  if (c[0] !== r.ma_ban) { await tai(); throw new Error('Bảng vừa thay đổi, đã tải lại. Thử lại thao tác.'); }
+  const m = dlDoc(c[16]), bat = !m.has(n), d = new Date();
+  if (bat) m.set(n, `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`); else m.delete(n);
+  await api(`values/${CONFIG.TAB}!Q${r._row}?valueInputOption=RAW`, {method: 'PUT', body: JSON.stringify({values: [[dlViet(m)]]})});
+  await api(`values/${CONFIG.LOG}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {method: 'POST', body: JSON.stringify({values: [[bayGio(), S.email, r.ma_ban, (bat ? 'Bắt đầu làm bước ' : 'Bỏ đánh dấu đang làm bước ') + n, Number(c[5]) || '', Number(c[5]) || '', c[8] || '', '']]})});
+  await tai();
 }
 
 /* ---------- Thêm mã ---------- */
