@@ -139,6 +139,47 @@ button,select,input{font:inherit;color:inherit}
   .jx-num{font-size:26px} .jx-stat{padding:12px 14px}
   .jx-detail{grid-template-columns:1fr;padding-inline:14px}
 }
+
+/* ===== Tab Quy trình ===== */
+.jx-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content;max-width:100%}
+.jx-tabs button{border:0;background:transparent;color:var(--mute);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.jx-tabs button[aria-selected="true"]{background:var(--acc);color:#fff}
+.jx.tab-qt #v-td,.jx.tab-qt #tools{display:none!important}
+.jx:not(.tab-qt) #v-qt{display:none!important}
+#v-qt{display:flex;flex-direction:column;gap:16px;max-width:900px}
+.q-how{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;font-size:13px;color:var(--mute)}
+.q-how b{color:var(--fg)}
+.q-how ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.q-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:end;position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
+.q-seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.q-seg button{border:0;background:transparent;color:var(--mute);padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.q-seg button[aria-pressed="true"]{background:var(--card2);color:var(--fg)}
+.q-ctl .fld{flex:1 1 160px}
+.q-leg{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--mute)}
+.q-who{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;border:1px solid var(--line)}
+.q-who.hai{color:var(--hai)} .q-who.thien{color:var(--thien)} .q-who.may{color:var(--may)} .q-who.hoa{color:var(--hoa)}
+.q-steps{display:flex;flex-direction:column;gap:10px}
+.q-par{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.q-par-tag{grid-column:1/-1;font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:680px){.q-par{grid-template-columns:1fr}}
+.q-step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:36px minmax(0,1fr);gap:4px 12px;min-width:0;align-content:start}
+.q-step.end{border-style:dashed}
+.q-num{grid-row:1/span 3;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;background:var(--card2);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.q-num.hai{color:var(--hai)} .q-num.thien{color:var(--thien)} .q-num.may{color:var(--may)} .q-num.hoa{color:var(--hoa)}
+.q-head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;min-width:0}
+.q-title{font-weight:600;font-size:14px}
+.q-body{min-width:0;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mute)}
+.q-sub{color:var(--fg);font-weight:500}
+.q-path{display:flex;gap:6px;align-items:flex-start;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:9px;padding:6px 8px;min-width:0}
+.q-path .lbl{font-size:10px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;padding-top:2px;white-space:nowrap}
+.q-path code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;overflow-wrap:anywhere;flex:1;min-width:0;color:var(--fg)}
+.q-path code b{color:var(--acc2);font-weight:500}
+.q-copy{font-size:11px;font-weight:600;border:1px solid var(--line);background:var(--card2);color:var(--mute);border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
+.q-br{display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);padding-left:10px}
+.q-br div{display:flex;gap:8px}
+.q-br .k{font-weight:700;white-space:nowrap}
+.q-br .k.ok{color:var(--ok)} .q-br .k.bad{color:var(--bad)}
+.q-foot{font-size:12px;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -157,6 +198,12 @@ button,select,input{font:inherit;color:inherit}
     </div>
   </div>
 
+  <div class="jx-tabs" role="tablist" aria-label="Chọn trang">
+    <button type="button" role="tab" id="tab-td" aria-selected="true">Tiến độ</button>
+    <button type="button" role="tab" id="tab-qt" aria-selected="false">Quy trình chuẩn</button>
+  </div>
+
+  <div id="v-td" style="display:flex;flex-direction:column;gap:22px">
   <div class="jx-login" id="login">
     <p>Đăng nhập bằng tài khoản Google đã được chia sẻ file tiến độ.</p>
     <button class="btn pri" id="btn-login" type="button">Đăng nhập Google</button>
@@ -189,6 +236,28 @@ button,select,input{font:inherit;color:inherit}
       <div id="rows"><div class="jx-msg">Đang tải…</div></div>
     </div>
   </div>
+  </div>
+
+  <section id="v-qt" aria-label="Quy trình chuẩn">
+    <div class="q-how"><b>Quy trình chuẩn</b> (chốt 10/11, sửa 11/11). Mỗi mã mới đi đúng các bước dưới theo bản CT hoặc CV. Nhập mã + quốc gia để đường dẫn tự điền, bấm Copy để lấy đường dẫn.
+      <ol>
+        <li>Thiện kéo bước trên tab Tiến độ; bước của Máy tự giao và tự chuyển khi máy xong.</li>
+        <li>Cần linh động: bấm tên người ở bước để đổi người làm, bỏ qua bước hoặc thêm bước phụ cho riêng mã đó.</li>
+        <li>Nhánh lỗi quay về đúng bước ghi trong quy trình, không nhảy cóc.</li>
+      </ol>
+    </div>
+    <div class="q-ctl">
+      <div class="q-seg" role="group" aria-label="Chọn bản">
+        <button id="q-ct" type="button" aria-pressed="true">Bản CT</button>
+        <button id="q-cv" type="button" aria-pressed="false">Bản CV</button>
+      </div>
+      <label class="fld" for="q-ma">Mã mẫu (tên thư mục)<input type="text" id="q-ma" placeholder="vd. J05 TEN MAU" autocomplete="off"></label>
+      <label class="fld" for="q-qg">Quốc gia<input type="text" id="q-qg" placeholder="vd. USA" autocomplete="off"></label>
+    </div>
+    <div class="q-leg"><span class="q-who hai">Anh Hải</span><span class="q-who thien">Thiện</span><span class="q-who may">Máy</span><span class="q-who hoa">Anh Hòa</span><span id="q-count"></span></div>
+    <div class="q-steps" id="q-steps"></div>
+    <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG.</div>
+  </section>
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
 
@@ -599,6 +668,122 @@ $('a-cancel').onclick = () => { $('add-panel').hidden = true; };
 $('a-save').onclick = themMa;
 if (docPhien()) { vaoApp(); henLamMoi(); }
 else if (S.email) { hienNutTiepTuc(); $('login-msg').textContent = 'Đang tự đăng nhập ' + S.email + '…'; window.addEventListener('load', () => setTimeout(lamMoi, 300)); }
+
+// ===== Tab Quy trình chuẩn (đồng bộ với file "Quy trinh thiet ke Jolie 2027 (sua 11-11).html") =====
+(function () {
+const R = "Drive › 2027 › JOLIE POSTER 2027 › ";
+const WHO = {hai:"Anh Hải", thien:"Thiện", may:"Máy", hoa:"Anh Hòa"};
+
+// {MA}, {QG}, {B} được thay theo ô nhập và bản đang chọn
+const common = [
+  {n:1, who:"hai", t:"Gửi mẫu cho Thiện", paths:[["Up vào","{MA} › 00 FILE GOC › ANH HAI UPLOAD › {B}"]]},
+  {n:2, who:"thien", t:"Tối ưu mẫu, up file gốc, báo máy", paths:[["Up vào","{MA} › 00 FILE GOC › FILE GOC TOI UU › {B}"]],
+    branch:[["Không có hình","chỉ up file gốc"],["Có hình","up kèm folder hình vào  {MA} › 01 FILE ANH DO TUOI LAM POSTER"]]},
+  {n:3, who:"may", t:"Đổ thử 1 năm bất kỳ, báo Thiện", text:"Lấy file gốc ở link bước 2 (mẫu có hình thì lấy kèm hình ở 01 FILE ANH DO TUOI LAM POSTER).",
+    paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"]]},
+  {n:4, who:"thien", t:"Check thiết kế năm đổ thử",
+    branch:[["bad","Lỗi nặng → note lỗi, báo máy sửa, lặp lại bước 4"],["ok","OK → bước 5"]]},
+  {n:5, who:"thien", t:"Duyệt, báo máy đổ full 19 năm", text:"Máy đổ đủ 19 năm.", paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"]]},
+  {n:6, who:"may", t:"Kiểm tra chéo 19 năm, báo Thiện", text:"Soát thông tin đã đúng hết chưa, có sai chính tả không."}
+];
+const bgMay = (n, next) => ({n, who:"may", t:"Vẽ bối cảnh 19 năm cho listing, báo Thiện",
+  text:"Theo hướng dẫn khung (trang 09): CHỈ vẽ khung + bối cảnh, để trống giữa khung, không mockup poster (NV mockup tay bằng Photoshop). Poster nằm thấp hơn khung, như ấn lõm xuống.",
+  list:[["Khung 1 – có khoảng trống: viền trống 8–10% giữa khung và poster","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-01.jpg"],
+        ["Khung 2 – thông dụng: poster sát mép, khung dày, chỉ đổi màu/gỗ/hoạ tiết, ngón tay nằm trên khung","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-02.jpg"],
+        ["Khung 3 – canvas: poster bọc tràn mép; người ngồi ghế, khung ngả vào người, 1 cổ tay đỡ sau, 1 tay xuôi theo cạnh, ngón không chạm poster","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-03.jpg"]],
+  paths:[["Lưu vào","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]],
+  branch:[["bad","Thiện thấy lỗi nặng → note, máy sửa, lặp lại bước "+n],["ok","OK → bước "+next]]});
+const listing = (n) => ({n, who:"may", t:"Làm bộ ảnh listing 19 năm hoàn chỉnh, báo Thiện", text:"Dùng dữ liệu ở 3 link:",
+  paths:[["Nguồn","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"],["Nguồn","MAU GOC › ANH LISTING {B} - MAY DUNG"],["Nguồn","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]]});
+const moTa = (n) => ({n, who:"may", t:"Viết mô tả + 13 tag cho 19 listing", text:"Theo bộ tag và mẫu mô tả Jolie (không lặp năm/mốc tuổi, tránh tag chung cả shop). Không cần duyệt, máy xong tự chuyển bước.",
+  paths:[["Lưu vào","{MA} › {QG} › {B} › 08 MO TA TAG"]]});
+const reviewLoop = (a, end) => [
+  {n:a, who:"thien", t:"Check bộ listing bước "+(a-2), branch:[["ok","OK → thẳng bước "+end],["bad","Có lỗi → bước "+(a+1)]]},
+  {n:a+1, who:"thien", t:"Note ảnh + năm lỗi, báo anh Hòa"},
+  {n:a+2, who:"hoa", t:"Sửa tay ảnh lỗi bằng Photoshop, báo Thiện"},
+  {n:a+3, who:"thien", t:"Check lại bộ listing", branch:[["ok","OK → bước "+end],["bad","Có lỗi → lặp lại bước "+(a+1)+" và "+(a+2)]]}
+];
+const finish = (n) => ({n, who:"thien", t:"Báo anh Hải sang bước đăng bài", text:"Kết thúc quy trình thiết kế.", end:true});
+
+const CT = [...common,
+  {par:"7 ∥ 8 chạy song song", items:[
+    {n:7, who:"thien", t:"Sửa lỗi nhỏ, chính tả, chỉnh cả 19 năm", list:[
+      ["a. Save final, up đè","{MA} › {QG} › {B} › 01 FILE GOC AI"],
+      ["b. Xuất JPEG, up vào","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"],
+      ["c. File gốc trang 1, 2, 3, 5, 6 cho listing (CT không xuất PDF vào 02 PDF KIEM TRA)","MAU GOC › ANH LISTING {B} - MAY DUNG"]]},
+    bgMay(8, 9)]},
+  {n:9, who:"thien", t:"Xoá watermark ảnh bối cảnh bước 8, up đè; up đủ file bước 7; báo máy"},
+  {par:"10 ∥ 11 chạy song song", items:[listing(10), moTa(11)]},
+  ...reviewLoop(12, 16),
+  finish(16)
+];
+const CV = [...common,
+  {n:7, who:"may", t:"Soạn file txt 19 khách ngẫu nhiên", text:"Tên, ngày tháng năm sinh, nơi sinh, để anh Hòa điền Canva cho nhanh.",
+    paths:[["Lưu vào","MAU GOC › 02 PDF KIEM TRA"]]},
+  {par:"8 ∥ 9 chạy song song", items:[
+    {n:8, who:"thien", t:"Sửa lỗi nhỏ, chính tả, chỉnh cả 19 năm", list:[
+      ["a. Save final, up đè","{MA} › {QG} › {B} › 01 FILE GOC AI"],
+      ["b. File gốc trang 1, 2, 4, 6 cho listing","MAU GOC › ANH LISTING {B} - MAY DUNG"],
+      ["c. Xuất PDF để up Canva","MAU GOC › 02 PDF KIEM TRA"]]},
+    bgMay(9, 10)]},
+  {par:"10 ∥ 11 chạy song song", items:[
+    {n:10, who:"hoa", t:"Điền Canva, resize 3 size, xuất hình", text:"Lấy PDF ở MAU GOC › 02 PDF KIEM TRA, up Canva, điền theo file txt bước 7, resize 3 size.",
+      paths:[["Xuất vào","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"]]},
+    {n:11, who:"thien", t:"Xoá watermark ảnh bối cảnh, up đè", text:"Ảnh bối cảnh máy vẽ ở bước 9 (bản gốc ghi “bước 8”)."}]},
+  {par:"12 ∥ 13 chạy song song", items:[Object.assign(listing(12), {text:"Sau khi Thiện báo. Dùng dữ liệu ở 3 link:"}), moTa(13)]},
+  ...reviewLoop(14, 18),
+  {n:18, who:"may", t:"Xuất PDF tài liệu bàn giao khách 19 năm, báo Thiện", paths:[["Lưu vào","{MA} › {QG} › {B} › 05 TAI LIEU BAN GIAO"]]},
+  {n:19, who:"thien", t:"Check tài liệu bàn giao", branch:[["bad","Có lỗi → note, máy sửa, lặp lại bước 19"],["ok","OK → bước 20"]]},
+  finish(20)
+];
+
+
+  let ban = 'CT';
+  const g = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function fill(p, html) {
+    const m = {'{MA}': g('q-ma').value.trim() || '(mã mẫu)', '{QG}': g('q-qg').value.trim() || '(quốc gia)', '{B}': ban};
+    let s = html ? esc(p) : p;
+    for (const k in m) s = s.split(k).join(html ? '<b>' + esc(m[k]) + '</b>' : m[k]);
+    return s;
+  }
+  const pathEl = (l, p) => `<div class="q-path"><span class="lbl">${esc(l)}</span><code>${fill(R + p, true)}</code><button class="q-copy" type="button" data-p="${esc(p)}">Copy</button></div>`;
+  function stepEl(s) {
+    let b = '';
+    if (s.text) b += `<div>${fill(s.text, true)}</div>`;
+    if (s.paths) b += s.paths.map(([l, p]) => pathEl(l, p)).join('');
+    if (s.list) b += s.list.map(([l, p]) => `<div class="q-sub">${esc(l)}</div>` + pathEl('Vào', p)).join('');
+    if (s.branch) b += '<div class="q-br">' + s.branch.map(([k, v]) => `<div><span class="k ${k === 'ok' ? 'ok' : k === 'bad' ? 'bad' : ''}">${k === 'ok' ? '✓' : k === 'bad' ? '✕' : esc(k)}</span><span>${fill(v, true)}</span></div>`).join('') + '</div>';
+    return `<article class="q-step${s.end ? ' end' : ''}"><div class="q-num ${s.who}">${s.n}</div><div class="q-head"><span class="q-title">${esc(s.t)}</span><span class="q-who ${s.who}">${WHO[s.who]}</span></div><div class="q-body">${b}</div></article>`;
+  }
+  function ve() {
+    const list = ban === 'CT' ? CT : CV;
+    g('q-steps').innerHTML = list.map(x => x.par ? `<div class="q-par"><div class="q-par-tag">${esc(x.par)}</div>${x.items.map(stepEl).join('')}</div>` : stepEl(x)).join('');
+    g('q-count').textContent = 'Bản ' + ban + ': ' + (QT_BUOC[ban] || []).length + ' bước';
+    g('q-ct').setAttribute('aria-pressed', ban === 'CT'); g('q-cv').setAttribute('aria-pressed', ban === 'CV');
+  }
+  const luu = () => { try { localStorage.setItem('jtd_qt', JSON.stringify({ban, ma: g('q-ma').value, qg: g('q-qg').value})); } catch (e) {} };
+  try { const o = JSON.parse(localStorage.getItem('jtd_qt') || 'null'); if (o) { ban = o.ban || 'CT'; g('q-ma').value = o.ma || ''; g('q-qg').value = o.qg || ''; } } catch (e) {}
+  g('q-ct').onclick = () => { ban = 'CT'; ve(); luu(); };
+  g('q-cv').onclick = () => { ban = 'CV'; ve(); luu(); };
+  g('q-ma').oninput = g('q-qg').oninput = () => { ve(); luu(); };
+  g('q-steps').addEventListener('click', e => {
+    const btn = e.target.closest('.q-copy'); if (!btn) return;
+    const t = fill(R + btn.dataset.p, false);
+    const ok = () => { btn.textContent = 'Đã copy'; setTimeout(() => btn.textContent = 'Copy', 1400); };
+    const chon = () => { const r = document.createRange(); r.selectNodeContents(btn.previousElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Đã chọn'; };
+    try { navigator.clipboard.writeText(t).then(ok, chon); } catch (_) { chon(); }
+  });
+  function tab(t) {
+    document.querySelector('.jx').classList.toggle('tab-qt', t === 'qt');
+    g('tab-td').setAttribute('aria-selected', t !== 'qt'); g('tab-qt').setAttribute('aria-selected', t === 'qt');
+    try { history.replaceState(null, '', t === 'qt' ? '#quy-trinh' : location.pathname + location.search); } catch (e) {}
+  }
+  g('tab-td').onclick = () => tab('td');
+  g('tab-qt').onclick = () => tab('qt');
+  ve();
+  if (location.hash === '#quy-trinh') tab('qt');
+})();
 </script>
 </body>
 </html>
