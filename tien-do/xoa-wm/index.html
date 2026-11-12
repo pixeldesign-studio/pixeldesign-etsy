@@ -408,8 +408,14 @@ function tinhO() { // xoá dấu trong khung hiện tại, tính từ ảnh nề
 }
 function nhinVung() { const o = E.o, S = Math.max(o.s * 3.2, 200); E.k = ve.width / S; E.vx0 = o.x + o.s / 2 - S / 2; E.vy0 = o.y + o.s / 2 - S / 2; veSua(); }
 function nhinToan() { const it = E.it; E.k = ve.width / Math.max(it.w, it.h); E.vx0 = (it.w - ve.width / E.k) / 2; E.vy0 = (it.h - ve.width / E.k) / 2; veSua(); }
+function kepNhin() { // không thu nhỏ quá mức vừa khung; ảnh luôn nằm giữa, không hở vùng đen
+  const it = E.it, min = ve.width / Math.max(it.w, it.h); E.k = Math.max(min, Math.min(16, E.k));
+  const V = ve.width / E.k;
+  E.vx0 = V >= it.w ? (it.w - V) / 2 : Math.max(0, Math.min(it.w - V, E.vx0));
+  E.vy0 = V >= it.h ? (it.h - V) / 2 : Math.max(0, Math.min(it.h - V, E.vy0));
+}
 function veSua() {
-  if (!E.nen) return; const k = E.k, o = E.o;
+  if (!E.nen) return; kepNhin(); const k = E.k, o = E.o;
   vx.setTransform(1, 0, 0, 1, 0, 0); vx.fillStyle = '#000'; vx.fillRect(0, 0, ve.width, ve.height);
   vx.imageSmoothingEnabled = k < 2.5; vx.imageSmoothingQuality = 'high';
   vx.drawImage(E.anGoc ? E.goc : E.nen, -E.vx0 * k, -E.vy0 * k, E.it.w * k, E.it.h * k);
@@ -441,7 +447,7 @@ const tha = () => { const K = E.keo; E.keo = null; if (K && K.loai === 'moi' && 
 ve.addEventListener('pointerup', tha); ve.addEventListener('pointercancel', tha);
 ve.addEventListener('wheel', (e) => {
   if (!E.nen) return; e.preventDefault(); const [px, py] = diem(e), sx = E.vx0 + px / E.k, sy = E.vy0 + py / E.k;
-  const min = ve.width / Math.max(E.it.w, E.it.h) * 0.8; E.k = Math.max(min, Math.min(16, E.k * (e.deltaY < 0 ? 1.18 : 1 / 1.18)));
+  E.k = E.k * (e.deltaY < 0 ? 1.18 : 1 / 1.18); kepNhin();
   E.vx0 = sx - px / E.k; E.vy0 = sy - py / E.k; veSua();
 }, { passive: false });
 
