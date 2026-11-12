@@ -61,8 +61,8 @@ input[type=range]{accent-color:var(--acc);width:150px}
 .phu-nen{position:fixed;inset:0;background:rgba(5,4,10,.86);display:flex;align-items:center;justify-content:center;padding:12px;z-index:20}
 .sua{background:#14121d;border:1px solid var(--line);border-radius:20px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px;width:min(1040px,100%);max-height:100%;overflow:auto}
 .sua h2{margin:0;font-size:15px;font-weight:600;overflow-wrap:anywhere}
-.khung-ve{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:1;max-height:calc(100vh - 60px);touch-action:none}
-.khung-ve canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.khung-ve{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:1;width:100%;max-width:calc(100vh - 56px);margin:0 auto;align-self:start;touch-action:none}
+.khung-ve canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
 .cot{display:flex;flex-direction:column;gap:13px;min-width:0}
 .mui{display:grid;grid-template-columns:repeat(3,34px);gap:4px}
 .mui button{height:30px;border-radius:9px;border:1px solid var(--line);background:var(--card2);cursor:pointer;font-size:13px}
@@ -109,7 +109,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <div class="khung-ve"><canvas id="ve" width="900" height="900"></canvas></div>
     <div class="cot">
       <h2 id="s-ten"></h2>
-      <div class="ghi">Kéo trên ảnh để <b>tạo vùng chọn</b> quanh dấu sao. Kéo trong khung để dời, kéo góc dưới phải để đổi cỡ. Lăn chuột để phóng to, thu nhỏ.</div>
+      <div class="ghi"><b>1.</b> Kéo chuột trên ảnh, vẽ 1 ô vừa khít quanh dấu sao (bấm "Toàn ảnh" nếu chưa thấy dấu).<br><b>2.</b> Khung chưa trùng: kéo trong khung để dời, kéo góc dưới phải để đổi cỡ, hoặc bấm ◎ để tự canh.<br><b>3.</b> Còn bóng sao: đổi "Kiểu dấu sao", rồi kéo "Độ mạnh".<br><b>4.</b> Bấm Lưu. Lăn chuột để phóng to, thu nhỏ.</div>
       <div class="o"><span class="nhan">Kiểu dấu sao</span>
         <div class="chon" id="s-kieu">
           <button type="button" data-v="B" aria-pressed="true">Kiểu mới</button>
@@ -141,7 +141,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
 </div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="gwr.min.js"></script>
+<script src="gwr.min.js?v=1"></script>
 <script>
 (() => {
 'use strict';
@@ -161,9 +161,39 @@ function mau(kieu, s) {
 
 /* ===== luồng xử lý tự động (chạy nền) ===== */
 const srcLuong = `importScripts(${JSON.stringify(new URL('gwr.min.js', location.href).href)});
+const vien = (g, w, h) => { const o = new Float32Array(w * h); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x; o[i] = Math.hypot(g[i + 1] - g[i - 1], g[i + w] - g[i - w]); } return o; };
+const ncc = (g, bw, T, s, px, py) => { let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) { const a = T[y * s + x], b = g[(py + y) * bw + px + x]; n++; sa += a; sb += b; saa += a * a; sbb += b * b; sab += a * b; }
+  const va = saa - sa * sa / n, vb = sbb - sb * sb / n; return va > 1e-9 && vb > 1e-9 ? (sab - sa * sb / n) / Math.sqrt(va * vb) : 0; };
+// điểm "giống dấu sao" (độ sáng + đường viền) quanh 1 vị trí chuẩn; R = tầm dò px
+function doSao(d, w, h, x0, y0, s, T, Tv, R) {
+  const bx = x0 - R, by = y0 - R, bw = s + 2 * R; if (bx < 0 || by < 0 || bx + bw > w || by + bw > h) return null;
+  const g = new Float32Array(bw * bw);
+  for (let y = 0; y < bw; y++) for (let x = 0; x < bw; x++) { const i = ((by + y) * w + bx + x) * 4; g[y * bw + x] = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]; }
+  const gv = vien(g, bw, bw); let tot = null;
+  for (let py = 0; py <= 2 * R; py++) for (let px = 0; px <= 2 * R; px++) { const c = ncc(g, bw, T, s, px, py) + ncc(gv, bw, Tv, s, px, py); if (!tot || c > tot.c) tot = { c, x: bx + px, y: by + py }; }
+  return tot;
+}
+// các vị trí chuẩn của dấu Gemini: cỡ 96 lề 64 (kiểu cũ A) / lề 192 (kiểu mới B); ảnh nhỏ: cỡ 48 lề 32 / 96 (C)
+function ungVien(w, h) {
+  const to = Math.min(w, h) > 1024, s = to ? 96 : 48, ds = to ? [[64, 'A', 96], [192, 'B', '96-20260520']] : [[32, 'C', 48], [96, 'C', 48]];
+  return ds.map(([le, kieu, ten]) => { const T = GWR.getEmbeddedAlphaMap(ten); return { kieu, s, x: w - le - s, y: h - le - s, T, Tv: vien(T, s, s) }; });
+}
 onmessage = (e) => { const {id, w, h, buf} = e.data;
   try { const goc = new Uint8ClampedArray(buf), d = new Uint8ClampedArray(goc);
-    const r = GWR.removeWatermarkFromImageDataSync({width: w, height: h, data: d}), o = r.imageData.data, m = r.meta || {};
+    const r = GWR.removeWatermarkFromImageDataSync({width: w, height: h, data: d}), m = r.meta || {}; let o = r.imageData.data;
+    const rv = m.detection && m.detection.residualVisibility; let pos = m.applied ? m.position : null, sot = !!(rv && rv.visible), kieu = '', doiCho = false;
+    // kiểm lại: dấu sao thật nằm ở đâu trên ảnh GỐC
+    let tot = null; const uv = ungVien(w, h);
+    uv.forEach((u) => { const t = doSao(goc, w, h, u.x, u.y, u.s, u.T, u.Tv, 8); if (t && (!tot || t.c > tot.c)) tot = { ...t, u }; });
+    if (tot && tot.c >= 0.5) {
+      kieu = tot.u.kieu;
+      if (!pos || Math.abs(pos.x - tot.x) > 6 || Math.abs(pos.y - tot.y) > 6) {   // công cụ xoá sai chỗ / không xoá → xoá lại đúng chỗ từ ảnh gốc
+        o = new Uint8ClampedArray(goc); pos = { x: tot.x, y: tot.y, width: tot.u.s, height: tot.u.s };
+        GWR.removeWatermark({ width: w, height: h, data: o }, tot.u.T, pos, { alphaGain: 1 }); doiCho = true; sot = true;
+      }
+      const sau = doSao(o, w, h, pos.x, pos.y, tot.u.s, tot.u.T, tot.u.Tv, 2); if (sau && sau.c > 0.45) sot = true;   // còn giống dấu sao sau khi xoá
+    }
     let x0 = w, y0 = h, x1 = -1, y1 = -1;
     for (let y = 0, i = 0; y < h; y++) for (let x = 0; x < w; x++, i += 4)
       if (o[i] !== goc[i] || o[i+1] !== goc[i+1] || o[i+2] !== goc[i+2]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
@@ -171,8 +201,7 @@ onmessage = (e) => { const {id, w, h, buf} = e.data;
     if (x1 >= 0) { const pw = x1 - x0 + 1, ph = y1 - y0 + 1, p = new Uint8ClampedArray(pw * ph * 4);
       for (let y = 0; y < ph; y++) p.set(o.subarray(((y0 + y) * w + x0) * 4, ((y0 + y) * w + x0 + pw) * 4), y * pw * 4);
       va = {x: x0, y: y0, w: pw, h: ph, buf: p.buffer}; }
-    const rv = m.detection && m.detection.residualVisibility;
-    postMessage({id, va, meta: {applied: !!m.applied, pos: m.position || null, sot: !!(rv && rv.visible), bien: m.config && m.config.alphaVariant || ''}}, va ? [va.buf] : []);
+    postMessage({id, va, meta: {applied: !!va, pos, sot, kieu, doiCho, diem: tot ? tot.c : 0}}, va ? [va.buf] : []);
   } catch (err) { postMessage({id, loi: String(err && err.message || err)}); } };`;
 const luong = new Worker(URL.createObjectURL(new Blob([srcLuong], { type: 'text/javascript' })));
 const cho = new Map();
@@ -248,7 +277,7 @@ async function chayHangDoi() {
       const c = await giaiMa(it.file); it.w = c.width; it.h = c.height;
       const r = await chayTuDong(it.id, c.getContext('2d').getImageData(0, 0, c.width, c.height));
       if (r.loi) throw new Error(r.loi);
-      it.pos = r.meta.pos; it.bien = r.meta.bien;
+      it.pos = r.meta.pos; it.kieu = r.meta.kieu;
       it.va = r.va ? [{ x: r.va.x, y: r.va.y, w: r.va.w, h: r.va.h, data: new ImageData(new Uint8ClampedArray(r.va.buf), r.va.w, r.va.h) }] : [];
       it.vaTuDong = it.va.slice();
       it.tt = !r.va || !r.meta.applied ? 'khong' : r.meta.sot ? 'xem' : 'ok'; it.ttTuDong = it.tt;
@@ -360,7 +389,7 @@ function moSua(it) {
     E.va = []; E.anGoc = false;
     const p = it.pos, s = p ? p.width : (Math.min(it.w, it.h) > 1024 ? 96 : 48), m = Math.min(it.w, it.h) > 1024 ? 192 : 96;
     E.o = p ? { x: p.x, y: p.y, s } : { x: it.w - m - s, y: it.h - m - s, s };
-    E.kieu = s <= 60 ? 'C' : (/20260520/.test(it.bien || '') || (p && it.w - p.x - p.width > 100) ? 'B' : 'A'); E.manh = 1;
+    E.kieu = it.kieu || (s <= 60 ? 'C' : (it.w - E.o.x - s > 128 ? 'B' : 'A')); E.manh = 1;
     dongBo(); nhinVung();
   });
 }
@@ -392,7 +421,7 @@ function veSua() {
     vx.fillStyle = '#fff'; vx.fillRect(X + S - 4, Y + S - 4, 9, 9); vx.strokeStyle = '#000'; vx.lineWidth = 1; vx.strokeRect(X + S - 4, Y + S - 4, 9, 9);
   }
 }
-const diem = (e) => { const r = ve.getBoundingClientRect(), f = ve.width / r.width; return [(e.clientX - r.left) * f, (e.clientY - r.top) * f]; };
+const diem = (e) => { const r = ve.getBoundingClientRect(); return [(e.clientX - r.left) * ve.width / r.width, (e.clientY - r.top) * ve.height / r.height]; };
 ve.addEventListener('pointerdown', (e) => {
   if (!E.nen) return; ve.setPointerCapture(e.pointerId);
   const [px, py] = diem(e), k = E.k, o = E.o, sx = E.vx0 + px / k, sy = E.vy0 + py / k;
@@ -408,7 +437,7 @@ ve.addEventListener('pointermove', (e) => {
   else { const s = Math.round(Math.max(Math.abs(sx - K.sx), Math.abs(sy - K.sy))); if (s < 12) return; K.ve = true; o.s = s; o.x = sx < K.sx ? K.sx - s : K.sx; o.y = sy < K.sy ? K.sy - s : K.sy; }
   dongBo();
 });
-const tha = () => { const K = E.keo; E.keo = null; if (K && K.loai === 'moi' && K.ve) { tuCanh(false); nhinVung(); } };
+const tha = () => { const K = E.keo; E.keo = null; if (K && K.loai === 'moi' && K.ve) { const o = E.o, le = E.it.w - o.x - o.s; E.kieu = o.s <= 60 ? 'C' : (le > 128 ? 'B' : 'A'); dongBo(); tuCanh(false); nhinVung(); } };
 ve.addEventListener('pointerup', tha); ve.addEventListener('pointercancel', tha);
 ve.addEventListener('wheel', (e) => {
   if (!E.nen) return; e.preventDefault(); const [px, py] = diem(e), sx = E.vx0 + px / E.k, sy = E.vy0 + py / E.k;
