@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a11">
+<title>Xoá WM Gemini · Jolie Poster 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#0b0a11;--card:rgba(255,255,255,.035);--card2:rgba(255,255,255,.06);--line:rgba(255,255,255,.08);
+  --fg:#f5f4fa;--mute:#8f8ca3;--dim:#5d5a70;--acc:#8b5cf6;--acc2:#b79bff;--warn:#f6b84b;--bad:#ff6b7d;--ok:#4ade80;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px}
+[hidden]{display:none!important}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px;display:flex;flex-direction:column;gap:16px}
+body.nhung .wrap{padding:2px 2px 32px}
+body.nhung .tieu-de{display:none}
+.tieu-de h1{margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.tieu-de div{font-size:12px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn:hover{background:rgba(255,255,255,.1)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.pri{border:0;color:#fff;font-weight:600;background:linear-gradient(135deg,#7c4dff,#a78bfa);box-shadow:0 4px 16px rgba(124,77,255,.35)}
+.btn.nho{padding:5px 11px;font-size:12px}
+.tha{border:1.5px dashed rgba(255,255,255,.18);border-radius:20px;background:var(--card);padding:26px 16px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
+.tha.keo{border-color:var(--acc2);background:rgba(139,92,246,.12)}
+.tha b{font-size:15px;font-weight:600}
+.tha span{color:var(--mute);font-size:12.5px}
+.bang{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+.o{display:flex;flex-direction:column;gap:6px;min-width:0}
+.o > label,.o > .nhan{font-size:11px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.chon{display:flex;gap:4px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px;flex-wrap:wrap}
+.chon button{border:0;background:transparent;color:var(--mute);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.chon button[aria-pressed="true"]{background:var(--acc);color:#fff}
+input[type=number]{width:84px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:6px 9px}
+input[type=range]{accent-color:var(--acc);width:150px}
+.hang{display:flex;gap:8px;align-items:center}
+.so{font-variant-numeric:tabular-nums;font-weight:600;min-width:38px}
+.day{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tong{font-size:12.5px;color:var(--mute)}
+.luoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.the{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.the.xem{border-color:rgba(246,184,75,.5)}
+.anh2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.anh2 figure{margin:0;position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:1;cursor:zoom-in}
+.anh2 canvas{width:100%;height:100%;display:block}
+.anh2 figcaption{position:absolute;left:6px;top:6px;font-size:10.5px;background:rgba(0,0,0,.6);padding:2px 7px;border-radius:999px;letter-spacing:.04em}
+.ten{font-weight:600;font-size:13px;overflow-wrap:anywhere}
+.phu{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.phu b{color:var(--fg);font-weight:600}
+.phu .qua{color:var(--bad);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mute)}
+.chip.ok::before{background:var(--ok)} .chip.xem::before{background:var(--warn)} .chip.tay::before{background:var(--acc2)} .chip.loi::before{background:var(--bad)}
+.dong{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.nut{display:flex;gap:6px;flex-wrap:wrap}
+.ghi{font-size:12px;color:var(--dim);line-height:1.5}
+/* sửa tay */
+.phu-nen{position:fixed;inset:0;background:rgba(5,4,10,.86);display:flex;align-items:center;justify-content:center;padding:12px;z-index:20}
+.sua{background:#14121d;border:1px solid var(--line);border-radius:20px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px;width:min(1040px,100%);max-height:100%;overflow:auto}
+.sua h2{margin:0;font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.khung-ve{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:1;max-height:calc(100vh - 60px);touch-action:none}
+.khung-ve canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.cot{display:flex;flex-direction:column;gap:13px;min-width:0}
+.mui{display:grid;grid-template-columns:repeat(3,34px);gap:4px}
+.mui button{height:30px;border-radius:9px;border:1px solid var(--line);background:var(--card2);cursor:pointer;font-size:13px}
+.mui i{display:block}
+@media (max-width:760px){.sua{grid-template-columns:1fr}.luoi{grid-template-columns:1fr}.day{margin-left:0}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1b1926;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:30}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tieu-de"><h1>Xoá WM Gemini</h1><div>Jolie Poster 2027</div></div>
+
+  <div class="tha" id="tha" role="button" tabindex="0">
+    <b>Kéo thả ảnh vào đây, hoặc bấm để chọn</b>
+    <span>Chọn nhiều ảnh một lần (PNG, JPG, WEBP). Ảnh xử lý ngay trên máy, không tải lên đâu cả.</span>
+    <input type="file" id="tep" accept="image/png,image/jpeg,image/webp" multiple hidden>
+  </div>
+
+  <div class="bang" id="bang" hidden>
+    <div class="o"><span class="nhan">Cạnh dài ảnh xuất</span>
+      <div class="chon" id="c-kt">
+        <button type="button" data-v="0" aria-pressed="true">Gốc</button>
+        <button type="button" data-v="2048" aria-pressed="false">2048</button>
+        <button type="button" data-v="3000" aria-pressed="false">3000</button>
+        <button type="button" data-v="3840" aria-pressed="false">4K</button>
+      </div></div>
+    <div class="o"><label for="cl">Chất lượng JPEG</label>
+      <div class="hang"><input type="range" id="cl" min="50" max="100" step="1" value="90"><span class="so" id="cl-so">90%</span></div></div>
+    <div class="o"><label for="mb">Tối đa mỗi ảnh (MB)</label>
+      <div class="hang"><input type="number" id="mb" min="0.2" max="20" step="0.1" value="2" placeholder="không giới hạn"></div></div>
+    <div class="day">
+      <span class="tong" id="tong"></span>
+      <button class="btn" id="b-xoa" type="button">Bỏ hết</button>
+      <button class="btn pri" id="b-tai" type="button">Tải tất cả (.zip)</button>
+    </div>
+  </div>
+
+  <div class="luoi" id="luoi"></div>
+  <p class="ghi" id="ghi" hidden>Thẻ viền vàng là ảnh máy báo có thể chưa sạch: bấm <b>Sửa tay</b>, đặt khung trùng dấu sao rồi kéo "Độ mạnh" tới khi hết dấu. Chọn 4K với ảnh gốc 2048 là phóng to, ảnh to hơn nhưng không nét hơn.</p>
+</div>
+
+<div class="phu-nen" id="sua" hidden>
+  <div class="sua">
+    <div class="khung-ve"><canvas id="ve" width="900" height="900"></canvas></div>
+    <div class="cot">
+      <h2 id="s-ten"></h2>
+      <div class="ghi">Kéo trên ảnh để <b>tạo vùng chọn</b> quanh dấu sao. Kéo trong khung để dời, kéo góc dưới phải để đổi cỡ. Lăn chuột để phóng to, thu nhỏ.</div>
+      <div class="o"><span class="nhan">Kiểu dấu sao</span>
+        <div class="chon" id="s-kieu">
+          <button type="button" data-v="B" aria-pressed="true">Kiểu mới</button>
+          <button type="button" data-v="A" aria-pressed="false">Kiểu cũ</button>
+          <button type="button" data-v="C" aria-pressed="false">Nhỏ</button>
+        </div></div>
+      <div class="o"><label for="s-manh">Độ mạnh</label>
+        <div class="hang"><input type="range" id="s-manh" min="0.2" max="1.8" step="0.01" value="1"><span class="so" id="s-manh-so">1.00</span></div></div>
+      <div class="o"><label for="s-co">Cỡ khung (px)</label>
+        <div class="hang"><input type="range" id="s-co" min="16" max="400" step="1" value="96"><span class="so" id="s-co-so">96</span></div></div>
+      <div class="o"><span class="nhan">Dời khung 1px (hoặc phím mũi tên)</span>
+        <div class="mui">
+          <i></i><button type="button" data-d="0,-1">↑</button><i></i>
+          <button type="button" data-d="-1,0">←</button><button type="button" id="s-canh" title="Tự canh khung vào dấu sao gần nhất">◎</button><button type="button" data-d="1,0">→</button>
+          <i></i><button type="button" data-d="0,1">↓</button><i></i>
+        </div></div>
+      <div class="nut">
+        <button class="btn nho" id="s-toan" type="button">Toàn ảnh</button>
+        <button class="btn nho" id="s-goc" type="button">Giữ để xem gốc</button>
+        <button class="btn nho" id="s-them" type="button" title="Ảnh có 2 dấu: chốt vùng này rồi chọn vùng tiếp">Chốt, thêm vùng nữa</button>
+      </div>
+      <div class="nut" style="margin-top:auto">
+        <button class="btn pri" id="s-luu" type="button">Lưu</button>
+        <button class="btn" id="s-tudong" type="button">Về bản tự động</button>
+        <button class="btn" id="s-dong" type="button">Huỷ</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="gwr.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+if (window.top !== window) { document.body.classList.add('nhung'); document.documentElement.style.background = document.body.style.background = 'transparent'; }
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+let toastT; const toast = (s) => { const t = $('toast'); t.textContent = s; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200); };
+const mbTxt = (n) => (n / 1048576).toFixed(n < 10485760 ? 2 : 1) + ' MB';
+
+/* ===== mẫu dấu sao (dùng cho sửa tay) ===== */
+const KIEU = { A: [96, 96], B: ['96-20260520', 96], C: [48, 48] }, mauCache = new Map();
+function mau(kieu, s) {
+  const k = kieu + ':' + s; if (mauCache.has(k)) return mauCache.get(k);
+  const [ten, goc] = KIEU[kieu], a = GWR.getEmbeddedAlphaMap(ten), m = s === goc ? a : GWR.interpolateAlphaMap(a, goc, s);
+  if (mauCache.size > 60) mauCache.clear(); mauCache.set(k, m); return m;
+}
+
+/* ===== luồng xử lý tự động (chạy nền) ===== */
+const srcLuong = `importScripts(${JSON.stringify(new URL('gwr.min.js', location.href).href)});
+onmessage = (e) => { const {id, w, h, buf} = e.data;
+  try { const goc = new Uint8ClampedArray(buf), d = new Uint8ClampedArray(goc);
+    const r = GWR.removeWatermarkFromImageDataSync({width: w, height: h, data: d}), o = r.imageData.data, m = r.meta || {};
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let y = 0, i = 0; y < h; y++) for (let x = 0; x < w; x++, i += 4)
+      if (o[i] !== goc[i] || o[i+1] !== goc[i+1] || o[i+2] !== goc[i+2]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    let va = null;
+    if (x1 >= 0) { const pw = x1 - x0 + 1, ph = y1 - y0 + 1, p = new Uint8ClampedArray(pw * ph * 4);
+      for (let y = 0; y < ph; y++) p.set(o.subarray(((y0 + y) * w + x0) * 4, ((y0 + y) * w + x0 + pw) * 4), y * pw * 4);
+      va = {x: x0, y: y0, w: pw, h: ph, buf: p.buffer}; }
+    const rv = m.detection && m.detection.residualVisibility;
+    postMessage({id, va, meta: {applied: !!m.applied, pos: m.position || null, sot: !!(rv && rv.visible), bien: m.config && m.config.alphaVariant || ''}}, va ? [va.buf] : []);
+  } catch (err) { postMessage({id, loi: String(err && err.message || err)}); } };`;
+const luong = new Worker(URL.createObjectURL(new Blob([srcLuong], { type: 'text/javascript' })));
+const cho = new Map();
+luong.onmessage = (e) => { const f = cho.get(e.data.id); cho.delete(e.data.id); if (f) f(e.data); };
+const chayTuDong = (id, img) => new Promise((ok) => { cho.set(id, ok); luong.postMessage({ id, w: img.width, h: img.height, buf: img.data.buffer }, [img.data.buffer]); });
+
+/* ===== danh sách ảnh ===== */
+const DS = []; let demId = 0;
+const CD = { kt: 0, cl: 90, mb: 2 };
+try { Object.assign(CD, JSON.parse(localStorage.getItem('jwm_cd') || '{}')); } catch (e) {}
+const luuCD = () => { try { localStorage.setItem('jwm_cd', JSON.stringify(CD)); } catch (e) {} };
+
+async function giaiMa(file) {
+  const bmp = await createImageBitmap(file), c = document.createElement('canvas');
+  c.width = bmp.width; c.height = bmp.height; c.getContext('2d', { willReadFrequently: true }).drawImage(bmp, 0, 0);
+  if (bmp.close) bmp.close(); return c;
+}
+const dan = (ctx, vas) => vas.forEach((v) => ctx.putImageData(v.data, v.x, v.y));
+// ảnh đầy đủ đã xoá WM
+async function anhSach(it) { const c = await giaiMa(it.file); dan(c.getContext('2d'), it.va); return c; }
+
+function tam(it) { // tâm vùng xem trước
+  const v = it.va[it.va.length - 1];
+  if (v) return [v.x + v.w / 2, v.y + v.h / 2];
+  if (it.pos) return [it.pos.x + it.pos.width / 2, it.pos.y + it.pos.height / 2];
+  return [it.w - Math.min(160, it.w / 2), it.h - Math.min(160, it.h / 2)];
+}
+function catXem(it, c) { // giữ 1 mảnh ảnh gốc quanh dấu để vẽ ô Trước / Sau
+  const S = Math.min(360, it.w, it.h), [cx, cy] = tam(it);
+  const x = Math.round(Math.max(0, Math.min(it.w - S, cx - S / 2))), y = Math.round(Math.max(0, Math.min(it.h - S, cy - S / 2)));
+  const m = document.createElement('canvas'); m.width = m.height = S; m.getContext('2d').drawImage(c, -x, -y);
+  it.xem = { x, y, S, c: m };
+}
+function veXem(it) {
+  const { x, y, S, c } = it.xem;
+  const a = it.cvT.getContext('2d'); it.cvT.width = it.cvT.height = S; a.drawImage(c, 0, 0);
+  const b = it.cvS.getContext('2d'); it.cvS.width = it.cvS.height = S; b.drawImage(c, 0, 0);
+  it.va.forEach((v) => { const t = document.createElement('canvas'); t.width = v.w; t.height = v.h; t.getContext('2d').putImageData(v.data, 0, 0); b.drawImage(t, v.x - x, v.y - y); });
+}
+
+function taoThe(it) {
+  const the = el('div', 'the'); it.the = the;
+  const a2 = el('div', 'anh2');
+  const f1 = el('figure'), f2 = el('figure'); it.cvT = el('canvas'); it.cvS = el('canvas');
+  f1.append(it.cvT, el('figcaption', '', 'Trước')); f2.append(it.cvS, el('figcaption', '', 'Sau'));
+  f1.onclick = f2.onclick = () => { if (it.tt !== 'cho' && it.tt !== 'loi') moSua(it); };
+  a2.append(f1, f2);
+  it.eTen = el('div', 'ten', it.file.name);
+  const d1 = el('div', 'dong'); it.eChip = el('span', 'chip', 'Đang xử lý…'); it.ePhu = el('span', 'phu'); d1.append(it.eChip, it.ePhu);
+  const d2 = el('div', 'dong'); it.eRa = el('span', 'phu');
+  const nut = el('div', 'nut');
+  it.bSua = el('button', 'btn nho', 'Sửa tay'); it.bSua.type = 'button'; it.bSua.onclick = () => moSua(it);
+  it.bTai = el('button', 'btn nho', 'Tải'); it.bTai.type = 'button'; it.bTai.onclick = () => tai1(it);
+  const bBo = el('button', 'btn nho', 'Bỏ'); bBo.type = 'button'; bBo.onclick = () => { DS.splice(DS.indexOf(it), 1); the.remove(); capNhatChung(); };
+  nut.append(it.bSua, it.bTai, bBo); d2.append(it.eRa, nut);
+  the.append(a2, it.eTen, d1, d2); $('luoi').append(the);
+}
+const TT = { cho: ['', 'Đang xử lý…'], ok: ['ok', 'Đã xoá'], xem: ['xem', 'Nên xem lại'], khong: ['xem', 'Không thấy dấu'], tay: ['tay', 'Đã sửa tay'], loi: ['loi', 'Lỗi đọc ảnh'] };
+function veThe(it) {
+  const [c, t] = TT[it.tt]; it.eChip.className = 'chip ' + c; it.eChip.textContent = t;
+  it.the.classList.toggle('xem', it.tt === 'xem' || it.tt === 'khong');
+  it.ePhu.textContent = it.w ? it.w + ' × ' + it.h + ' · gốc ' + mbTxt(it.file.size) : '';
+  it.bSua.disabled = it.bTai.disabled = it.tt === 'cho' || it.tt === 'loi';
+  if (it.xem) veXem(it);
+}
+
+let dangChay = false;
+async function chayHangDoi() {
+  if (dangChay) return; dangChay = true;
+  for (;;) {
+    const it = DS.find((x) => x.tt === 'cho' && !x.dang); if (!it) break; it.dang = true;
+    try {
+      const c = await giaiMa(it.file); it.w = c.width; it.h = c.height;
+      const r = await chayTuDong(it.id, c.getContext('2d').getImageData(0, 0, c.width, c.height));
+      if (r.loi) throw new Error(r.loi);
+      it.pos = r.meta.pos; it.bien = r.meta.bien;
+      it.va = r.va ? [{ x: r.va.x, y: r.va.y, w: r.va.w, h: r.va.h, data: new ImageData(new Uint8ClampedArray(r.va.buf), r.va.w, r.va.h) }] : [];
+      it.vaTuDong = it.va.slice();
+      it.tt = !r.va || !r.meta.applied ? 'khong' : r.meta.sot ? 'xem' : 'ok'; it.ttTuDong = it.tt;
+      catXem(it, c);
+    } catch (e) { it.tt = 'loi'; console.error(e); }
+    veThe(it); capNhatChung();
+  }
+  dangChay = false;
+}
+function themTep(files) {
+  const fs = [...files].filter((f) => /^image\/(png|jpeg|webp)$/.test(f.type));
+  if (!fs.length) { toast('Chỉ nhận ảnh PNG, JPG, WEBP.'); return; }
+  fs.forEach((file) => { const it = { id: ++demId, file, tt: 'cho', va: [], ra: null }; DS.push(it); taoThe(it); veThe(it); });
+  capNhatChung(); chayHangDoi();
+}
+
+/* ===== xuất JPEG ===== */
+const toBlob = (c, q) => new Promise((ok) => c.toBlob(ok, 'image/jpeg', q));
+function kichThuoc(it) {
+  const dai = Math.max(it.w, it.h), k = CD.kt ? CD.kt / dai : 1;
+  return [Math.max(1, Math.round(it.w * k)), Math.max(1, Math.round(it.h * k))];
+}
+async function xuat(it) {
+  const src = await anhSach(it), [w, h] = kichThuoc(it), c = document.createElement('canvas');
+  c.width = w; c.height = h; const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.drawImage(src, 0, 0, w, h);
+  let q = CD.cl / 100, blob = await toBlob(c, q); const tran = CD.mb > 0 ? CD.mb * 1048576 : 0;
+  if (tran && blob.size > tran) {
+    let lo = 0.3, hi = q, tot = null;
+    for (let i = 0; i < 7; i++) { const m = (lo + hi) / 2, b = await toBlob(c, m); if (b.size <= tran) { tot = { b, m }; lo = m; } else hi = m; }
+    if (!tot) { const b = await toBlob(c, 0.3); tot = { b, m: 0.3 }; }
+    blob = tot.b; q = tot.m;
+  }
+  return { blob, w, h, q: Math.round(q * 100), qua: !!tran && blob.size > tran };
+}
+let dot = 0, hen;
+function tinhLai(chiIt) { // tính lại dung lượng xuất (chạy nền, huỷ được)
+  const d = ++dot; (chiIt ? [chiIt] : DS).forEach((it) => { it.ra = null; veRa(it); });
+  clearTimeout(hen); hen = setTimeout(async () => {
+    for (const it of DS.slice()) {
+      if (d !== dot) return; if (it.ra || it.tt === 'cho' || it.tt === 'loi') continue;
+      try { const r = await xuat(it); if (d !== dot) return; it.ra = r; } catch (e) { console.error(e); }
+      veRa(it); veTong();
+    }
+  }, 250);
+}
+function veRa(it) {
+  if (it.tt === 'cho' || it.tt === 'loi') { it.eRa.textContent = ''; return; }
+  if (!it.ra) { it.eRa.textContent = 'Đang tính dung lượng…'; return; }
+  const r = it.ra; it.eRa.innerHTML = '';
+  it.eRa.append('Xuất ' + r.w + ' × ' + r.h + ' · ');
+  const b = el('b', r.qua ? 'qua' : '', mbTxt(r.blob.size)); it.eRa.append(b, ' · ' + r.q + '%' + (r.qua ? ' (vẫn vượt mức)' : ''));
+}
+function veTong() {
+  const xong = DS.filter((x) => x.ra), xem = DS.filter((x) => x.tt === 'xem' || x.tt === 'khong').length;
+  $('tong').textContent = DS.length + ' ảnh' + (xem ? ' · ' + xem + ' nên xem lại' : '') + (xong.length ? ' · tổng ' + mbTxt(xong.reduce((s, x) => s + x.ra.blob.size, 0)) : '');
+}
+function capNhatChung() { $('bang').hidden = $('ghi').hidden = !DS.length; veTong(); tinhLai(); }
+const tenRa = (it) => it.file.name.replace(/\.[^.]+$/, '') + '.jpg';
+function luuTep(blob, ten) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ten; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+async function tai1(it) { const r = it.ra || (it.ra = await xuat(it)); veRa(it); luuTep(r.blob, tenRa(it)); }
+
+/* zip không nén (JPEG đã nén sẵn) */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = (u) => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+async function taoZip(tep) {
+  const enc = new TextEncoder(), phan = [], muc = []; let off = 0; const D = new Date();
+  const gio = (D.getHours() << 11) | (D.getMinutes() << 5) | (D.getSeconds() >> 1), ngay = ((D.getFullYear() - 1980) << 9) | ((D.getMonth() + 1) << 5) | D.getDate();
+  for (const { ten, blob } of tep) {
+    const u = new Uint8Array(await blob.arrayBuffer()), n = enc.encode(ten), crc = crc32(u);
+    const h = new DataView(new ArrayBuffer(30)); h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(10, gio, true); h.setUint16(12, ngay, true);
+    h.setUint32(14, crc, true); h.setUint32(18, u.length, true); h.setUint32(22, u.length, true); h.setUint16(26, n.length, true);
+    phan.push(h.buffer, n, u);
+    const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(12, gio, true); c.setUint16(14, ngay, true);
+    c.setUint32(16, crc, true); c.setUint32(20, u.length, true); c.setUint32(24, u.length, true); c.setUint16(28, n.length, true); c.setUint32(42, off, true);
+    muc.push(c.buffer, n); off += 30 + n.length + u.length;
+  }
+  const cd = muc.reduce((s, b) => s + b.byteLength, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, tep.length, true); e.setUint16(10, tep.length, true); e.setUint32(12, cd, true); e.setUint32(16, off, true);
+  return new Blob([...phan, ...muc, e.buffer], { type: 'application/zip' });
+}
+async function taiTatCa() {
+  const ds = DS.filter((x) => x.tt !== 'cho' && x.tt !== 'loi'); if (!ds.length) return;
+  if (DS.some((x) => x.tt === 'cho')) { toast('Còn ảnh đang xử lý, chờ chút rồi bấm lại.'); return; }
+  const b = $('b-tai'); b.disabled = true; const cu = b.textContent;
+  try {
+    const tep = [], dung = new Set();
+    for (let i = 0; i < ds.length; i++) {
+      b.textContent = 'Đang xuất ' + (i + 1) + '/' + ds.length + '…';
+      const it = ds[i]; if (!it.ra) { it.ra = await xuat(it); veRa(it); }
+      let ten = tenRa(it), k = 2; while (dung.has(ten.toLowerCase())) ten = tenRa(it).replace(/\.jpg$/, '-' + k++ + '.jpg'); dung.add(ten.toLowerCase());
+      tep.push({ ten, blob: it.ra.blob });
+    }
+    if (tep.length === 1) luuTep(tep[0].blob, tep[0].ten);
+    else { const d = new Date(), p = (n) => String(n).padStart(2, '0'); luuTep(await taoZip(tep), 'xoa-wm-' + p(d.getDate()) + p(d.getMonth() + 1) + '-' + p(d.getHours()) + p(d.getMinutes()) + '.zip'); }
+    veTong();
+  } catch (e) { console.error(e); toast('Không xuất được: ' + (e.message || e)); }
+  b.disabled = false; b.textContent = cu;
+}
+
+/* ===== sửa tay ===== */
+const ve = $('ve'), vx = ve.getContext('2d');
+const E = { it: null };
+function moSua(it) {
+  E.it = it; $('s-ten').textContent = it.file.name; $('sua').hidden = false;
+  giaiMa(it.file).then((c) => {
+    if (E.it !== it) return;
+    E.nen = c; E.nx = c.getContext('2d'); E.goc = document.createElement('canvas'); E.goc.width = c.width; E.goc.height = c.height; E.goc.getContext('2d').drawImage(c, 0, 0);
+    E.va = []; E.anGoc = false;
+    const p = it.pos, s = p ? p.width : (Math.min(it.w, it.h) > 1024 ? 96 : 48), m = Math.min(it.w, it.h) > 1024 ? 192 : 96;
+    E.o = p ? { x: p.x, y: p.y, s } : { x: it.w - m - s, y: it.h - m - s, s };
+    E.kieu = s <= 60 ? 'C' : (/20260520/.test(it.bien || '') || (p && it.w - p.x - p.width > 100) ? 'B' : 'A'); E.manh = 1;
+    dongBo(); nhinVung();
+  });
+}
+function dongSua() { $('sua').hidden = true; E.it = E.nen = E.goc = null; }
+function kep() { const it = E.it, o = E.o; o.s = Math.max(16, Math.min(o.s, 400, it.w, it.h)); o.x = Math.max(0, Math.min(it.w - o.s, Math.round(o.x))); o.y = Math.max(0, Math.min(it.h - o.s, Math.round(o.y))); }
+function dongBo() {
+  kep();
+  [...$('s-kieu').children].forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === E.kieu));
+  $('s-manh').value = E.manh; $('s-manh-so').textContent = (+E.manh).toFixed(2); $('s-co').value = E.o.s; $('s-co-so').textContent = E.o.s;
+  tinhO(); veSua();
+}
+function tinhO() { // xoá dấu trong khung hiện tại, tính từ ảnh nền (gốc + các vùng đã chốt)
+  const o = E.o, d = E.nx.getImageData(o.x, o.y, o.s, o.s);
+  GWR.removeWatermark(d, mau(E.kieu, o.s), { x: 0, y: 0, width: o.s, height: o.s }, { alphaGain: +E.manh });
+  E.oData = d; if (!E.oCv) E.oCv = document.createElement('canvas'); E.oCv.width = E.oCv.height = o.s; E.oCv.getContext('2d').putImageData(d, 0, 0);
+}
+function nhinVung() { const o = E.o, S = Math.max(o.s * 3.2, 200); E.k = ve.width / S; E.vx0 = o.x + o.s / 2 - S / 2; E.vy0 = o.y + o.s / 2 - S / 2; veSua(); }
+function nhinToan() { const it = E.it; E.k = ve.width / Math.max(it.w, it.h); E.vx0 = (it.w - ve.width / E.k) / 2; E.vy0 = (it.h - ve.width / E.k) / 2; veSua(); }
+function veSua() {
+  if (!E.nen) return; const k = E.k, o = E.o;
+  vx.setTransform(1, 0, 0, 1, 0, 0); vx.fillStyle = '#000'; vx.fillRect(0, 0, ve.width, ve.height);
+  vx.imageSmoothingEnabled = k < 2.5; vx.imageSmoothingQuality = 'high';
+  vx.drawImage(E.anGoc ? E.goc : E.nen, -E.vx0 * k, -E.vy0 * k, E.it.w * k, E.it.h * k);
+  const X = (o.x - E.vx0) * k, Y = (o.y - E.vy0) * k, S = o.s * k;
+  if (!E.anGoc) vx.drawImage(E.oCv, X, Y, S, S);
+  if (!E.anGoc || E.keo) {
+    vx.lineWidth = 1.5; vx.setLineDash([6, 5]); vx.strokeStyle = 'rgba(0,0,0,.7)'; vx.strokeRect(X - 1.5, Y - 1.5, S + 3, S + 3);
+    vx.lineDashOffset = 5.5; vx.strokeStyle = '#fff'; vx.strokeRect(X - 1.5, Y - 1.5, S + 3, S + 3); vx.lineDashOffset = 0; vx.setLineDash([]);
+    vx.fillStyle = '#fff'; vx.fillRect(X + S - 4, Y + S - 4, 9, 9); vx.strokeStyle = '#000'; vx.lineWidth = 1; vx.strokeRect(X + S - 4, Y + S - 4, 9, 9);
+  }
+}
+const diem = (e) => { const r = ve.getBoundingClientRect(), f = ve.width / r.width; return [(e.clientX - r.left) * f, (e.clientY - r.top) * f]; };
+ve.addEventListener('pointerdown', (e) => {
+  if (!E.nen) return; ve.setPointerCapture(e.pointerId);
+  const [px, py] = diem(e), k = E.k, o = E.o, sx = E.vx0 + px / k, sy = E.vy0 + py / k;
+  const X = (o.x - E.vx0) * k, Y = (o.y - E.vy0) * k, S = o.s * k;
+  if (Math.abs(px - (X + S)) < 14 && Math.abs(py - (Y + S)) < 14) E.keo = { loai: 'co' };
+  else if (px >= X && px <= X + S && py >= Y && py <= Y + S) E.keo = { loai: 'doi', dx: sx - o.x, dy: sy - o.y };
+  else E.keo = { loai: 'moi', sx, sy, cu: { ...o } };
+});
+ve.addEventListener('pointermove', (e) => {
+  if (!E.keo) return; const [px, py] = diem(e), k = E.k, o = E.o, sx = E.vx0 + px / k, sy = E.vy0 + py / k, K = E.keo;
+  if (K.loai === 'doi') { o.x = sx - K.dx; o.y = sy - K.dy; }
+  else if (K.loai === 'co') o.s = Math.round(Math.max(sx - o.x, sy - o.y));
+  else { const s = Math.round(Math.max(Math.abs(sx - K.sx), Math.abs(sy - K.sy))); if (s < 12) return; K.ve = true; o.s = s; o.x = sx < K.sx ? K.sx - s : K.sx; o.y = sy < K.sy ? K.sy - s : K.sy; }
+  dongBo();
+});
+const tha = () => { const K = E.keo; E.keo = null; if (K && K.loai === 'moi' && K.ve) { tuCanh(false); nhinVung(); } };
+ve.addEventListener('pointerup', tha); ve.addEventListener('pointercancel', tha);
+ve.addEventListener('wheel', (e) => {
+  if (!E.nen) return; e.preventDefault(); const [px, py] = diem(e), sx = E.vx0 + px / E.k, sy = E.vy0 + py / E.k;
+  const min = ve.width / Math.max(E.it.w, E.it.h) * 0.8; E.k = Math.max(min, Math.min(16, E.k * (e.deltaY < 0 ? 1.18 : 1 / 1.18)));
+  E.vx0 = sx - px / E.k; E.vy0 = sy - py / E.k; veSua();
+}, { passive: false });
+
+// tự canh khung vào dấu sao: so cả độ sáng lẫn đường viền theo kiểu dấu đang chọn, cỡ 80–112%
+function tuCanh(bao) {
+  const it = E.it, o = E.o, r = Math.max(10, Math.round(o.s * 0.35));
+  const bx = Math.max(0, o.x - r), by = Math.max(0, o.y - r), bw = Math.min(it.w, o.x + o.s + r) - bx, bh = Math.min(it.h, o.y + o.s + r) - by;
+  const d = E.nx.getImageData(bx, by, bw, bh).data, g = new Float32Array(bw * bh);
+  for (let i = 0, j = 0; j < g.length; i += 4, j++) g[j] = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+  const vien = (a, w, h) => { const q = new Float32Array(w * h); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x; q[i] = Math.hypot(a[i + 1] - a[i - 1], a[i + w] - a[i - w]); } return q; };
+  const gv = vien(g, bw, bh);
+  const ncc = (G, T, s, px, py, st) => { let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+    for (let y = 0; y < s; y += st) for (let x = 0; x < s; x += st) { const a = T[y * s + x], b = G[(py + y) * bw + px + x]; n++; sa += a; sb += b; saa += a * a; sbb += b * b; sab += a * b; }
+    const va = saa - sa * sa / n, vb = sbb - sb * sb / n; return va > 1e-9 && vb > 1e-9 ? (sab - sa * sb / n) / Math.sqrt(va * vb) : 0; };
+  const diemSo = (T, Tv, s, px, py, st) => ncc(g, T, s, px, py, st) + ncc(gv, Tv, s, px, py, st);
+  let tot = null; const s0 = Math.max(16, Math.round(o.s * 0.8)), s1 = Math.min(bw, bh, Math.round(o.s * 1.12));
+  for (const kieu of [E.kieu]) for (let s = s0; s <= s1; s += Math.max(1, Math.round(o.s / 32))) {
+    const T = mau(kieu, s), Tv = vien(T, s, s), st = Math.max(1, Math.round(s / 32));
+    for (let py = 0; py + s <= bh; py += 2) for (let px = 0; px + s <= bw; px += 2) { const c = diemSo(T, Tv, s, px, py, st); if (!tot || c > tot.c) tot = { c, s, px, py, kieu }; }
+  }
+  if (tot) { const b = { ...tot };
+    for (let s = Math.max(16, b.s - 3); s <= Math.min(bw, bh, b.s + 3); s++) { const T = mau(b.kieu, s), Tv = vien(T, s, s);
+      for (let py = Math.max(0, b.py - 2); py <= Math.min(bh - s, b.py + 2); py++) for (let px = Math.max(0, b.px - 2); px <= Math.min(bw - s, b.px + 2); px++) { const c = diemSo(T, Tv, s, px, py, 1); if (c > tot.c) tot = { c, s, px, py, kieu: b.kieu }; } } }
+  if (tot && tot.c > 0.9) { o.x = bx + tot.px; o.y = by + tot.py; o.s = tot.s; E.kieu = tot.kieu; dongBo(); if (bao) toast('Đã canh khung vào dấu sao.'); return true; }
+  if (bao) toast('Không dò chắc được dấu sao quanh khung, canh tay giúp.'); return false;
+}
+function chot() { const o = E.o; E.va.push({ x: o.x, y: o.y, w: o.s, h: o.s, data: E.oData }); E.nx.putImageData(E.oData, o.x, o.y); }
+$('s-kieu').onclick = (e) => { const b = e.target.closest('button'); if (b) { E.kieu = b.dataset.v; dongBo(); } };
+$('s-manh').oninput = (e) => { E.manh = +e.target.value; dongBo(); };
+$('s-co').oninput = (e) => { const s = +e.target.value, o = E.o; o.x += (o.s - s) / 2; o.y += (o.s - s) / 2; o.s = s; dongBo(); };
+document.querySelector('.mui').onclick = (e) => { const b = e.target.closest('button[data-d]'); if (!b) return; const [dx, dy] = b.dataset.d.split(',').map(Number); E.o.x += dx; E.o.y += dy; dongBo(); };
+$('s-canh').onclick = () => tuCanh(true);
+$('s-toan').onclick = nhinToan;
+const xemGoc = (b) => { E.anGoc = b; veSua(); };
+$('s-goc').onpointerdown = () => xemGoc(true); $('s-goc').onpointerup = $('s-goc').onpointerleave = () => xemGoc(false);
+$('s-them').onclick = () => { chot(); E.o = { x: E.o.x - E.o.s * 1.5, y: E.o.y, s: E.o.s }; dongBo(); toast('Đã chốt vùng. Kéo trên ảnh để chọn vùng tiếp theo.'); };
+$('s-luu').onclick = () => { const it = E.it; chot(); it.va = E.va; it.tt = 'tay'; catXem(it, E.goc); veThe(it); tinhLai(it); veTong(); dongSua(); };
+$('s-tudong').onclick = () => { const it = E.it; it.va = it.vaTuDong.slice(); it.tt = it.ttTuDong; catXem(it, E.goc); veThe(it); tinhLai(it); veTong(); dongSua(); };
+$('s-dong').onclick = dongSua;
+$('sua').addEventListener('pointerdown', (e) => { if (e.target === $('sua')) dongSua(); });
+addEventListener('keydown', (e) => {
+  if ($('sua').hidden || !E.nen) return;
+  const m = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (m && e.target.type !== 'range' && e.target.type !== 'number') { e.preventDefault(); const n = e.shiftKey ? 5 : 1; E.o.x += m[0] * n; E.o.y += m[1] * n; dongBo(); }
+  else if (e.key === 'Escape') dongSua();
+});
+
+/* ===== nút chung ===== */
+const tha0 = $('tha'), tep = $('tep');
+tha0.onclick = () => tep.click(); tha0.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tep.click(); } };
+tep.onchange = () => { themTep(tep.files); tep.value = ''; };
+['dragenter', 'dragover'].forEach((t) => addEventListener(t, (e) => { e.preventDefault(); tha0.classList.add('keo'); }));
+['dragleave', 'drop'].forEach((t) => addEventListener(t, (e) => { e.preventDefault(); if (t === 'drop' || !e.relatedTarget) tha0.classList.remove('keo'); }));
+addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files.length) themTep(e.dataTransfer.files); });
+addEventListener('paste', (e) => { const f = [...(e.clipboardData ? e.clipboardData.files : [])]; if (f.length) themTep(f); });
+function veCD() {
+  [...$('c-kt').children].forEach((b) => b.setAttribute('aria-pressed', +b.dataset.v === +CD.kt));
+  $('cl').value = CD.cl; $('cl-so').textContent = CD.cl + '%'; $('mb').value = CD.mb > 0 ? CD.mb : '';
+}
+$('c-kt').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; CD.kt = +b.dataset.v; luuCD(); veCD(); tinhLai(); };
+$('cl').oninput = (e) => { CD.cl = +e.target.value; luuCD(); veCD(); tinhLai(); };
+$('mb').onchange = (e) => { const v = parseFloat(e.target.value); CD.mb = v > 0 ? Math.max(0.2, Math.min(20, v)) : 0; luuCD(); veCD(); tinhLai(); };
+$('b-tai').onclick = taiTatCa;
+$('b-xoa').onclick = () => { DS.length = 0; $('luoi').replaceChildren(); capNhatChung(); };
+veCD();
+})();
+</script>
+</body>
+</html>
