@@ -299,7 +299,7 @@ button,select,input{font:inherit;color:inherit}
     </div>
     <div class="q-leg"><span class="q-who hai">Anh Hải</span><span class="q-who thien">Thiện</span><span class="q-who may">Máy</span><span class="q-who hoa">Anh Hòa</span><span id="q-count"></span></div>
     <div class="q-steps" id="q-steps"></div>
-    <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG. 12/11: xoá WM bối cảnh bắt buộc trước khi làm listing; máy vẽ xong tự xoá WM, Thiện chỉ xử ảnh sót bằng tab Xoá WM. 13/11: mỗi mã vẽ bộ bối cảnh riêng, lưu {mã} › {QG} › CT/CV › 06 BOI CANH GOC › THU BOI CANH; Thiện duyệt bộ bối cảnh — ảnh không đạt chuyển vào THU BOI CANH › KHONG DAT, thiếu tổng số ảnh thì kéo lùi về bước vẽ, máy vẽ bù đúng số thiếu, lặp tới khi đủ.</div>
+    <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG. 12/11: xoá WM bối cảnh bắt buộc trước khi làm listing; máy vẽ xong tự xoá WM, Thiện chỉ xử ảnh sót bằng tab Xoá WM. 13/11: lỗi thiết kế Thiện up theo mã vào 10 LOI THIET KE, máy đọc trước khi đổ 19 năm; mỗi mã vẽ bộ bối cảnh riêng, lưu {mã} › {QG} › CT/CV › 06 BOI CANH GOC › THU BOI CANH; Thiện duyệt bộ bối cảnh — ảnh không đạt chuyển vào THU BOI CANH › KHONG DAT, thiếu tổng số ảnh thì kéo lùi về bước vẽ, máy vẽ bù đúng số thiếu, lặp tới khi đủ.</div>
   </section>
   <section id="v-wm" aria-label="Xoá WM Gemini"><iframe id="wm-khung" title="Xoá WM Gemini" data-src="xoa-wm/?v=20261112-4"></iframe></section>
 
@@ -893,9 +893,10 @@ const common = [
     branch:[["Không có hình","chỉ up file gốc"],["Có hình","up kèm folder hình vào  {MA} › 01 FILE ANH DO TUOI LAM POSTER"]]},
   {n:3, who:"may", t:"Đổ thử 1 năm bất kỳ, báo Thiện", text:"Lấy file gốc ở link bước 2 (mẫu có hình thì lấy kèm hình ở 01 FILE ANH DO TUOI LAM POSTER).",
     paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"]]},
-  {n:4, who:"thien", t:"Check thiết kế năm đổ thử",
+  {n:4, who:"thien", t:"Check thiết kế năm đổ thử", text:"Có lỗi: note lên ảnh rồi up vào thư mục lỗi của mã (mỗi mã 1 thư mục riêng, không up vào folder lỗi chung).",
+    paths:[["Lỗi up vào","{MA} › {QG} › {B} › 10 LOI THIET KE"]],
     branch:[["bad","Lỗi nặng → note lỗi, báo máy sửa, lặp lại bước 4"],["ok","OK → bước 5"]]},
-  {n:5, who:"thien", t:"Duyệt, báo máy đổ full 19 năm", text:"Máy đổ đủ 19 năm.", paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"]]},
+  {n:5, who:"thien", t:"Duyệt, báo máy đổ full 19 năm", text:"Máy đổ đủ 19 năm. Trước khi đổ, máy đọc hết lỗi Thiện up trong 10 LOI THIET KE của mã, sửa script và ghi kinh nghiệm.", paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"],["Máy đọc lỗi ở","{MA} › {QG} › {B} › 10 LOI THIET KE"]]},
   {n:6, who:"may", t:"Kiểm tra chéo 19 năm, báo Thiện", text:"Soát thông tin đã đúng hết chưa, có sai chính tả không."}
 ];
 const bgMay = (n, next) => ({n, who:"may", t:"Vẽ bối cảnh 19 năm + tự xoá WM, báo Thiện",
