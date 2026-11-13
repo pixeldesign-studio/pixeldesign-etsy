@@ -282,7 +282,7 @@ button,select,input{font:inherit;color:inherit}
   </div>
 
   <section id="v-qt" aria-label="Quy trình chuẩn">
-    <div class="q-how"><b>Quy trình chuẩn</b> (chốt 10/11, sửa 11/11). Mỗi mã mới đi đúng các bước dưới theo bản CT hoặc CV. Nhập mã + quốc gia để đường dẫn tự điền, bấm Copy để lấy đường dẫn.
+    <div class="q-how"><b>Quy trình chuẩn</b> (chốt 10/11, sửa 11/11 · 12/11 · 13/11). Mỗi mã mới đi đúng các bước dưới theo bản CT hoặc CV. Nhập mã + quốc gia để đường dẫn tự điền, bấm Copy để lấy đường dẫn.
       <ol>
         <li>Thiện kéo bước trên tab Tiến độ; bước của Máy tự giao và tự chuyển khi máy xong.</li>
         <li>Cần linh động: bấm tên người ở bước để đổi người làm, bỏ qua bước hoặc thêm bước phụ cho riêng mã đó.</li>
@@ -299,7 +299,7 @@ button,select,input{font:inherit;color:inherit}
     </div>
     <div class="q-leg"><span class="q-who hai">Anh Hải</span><span class="q-who thien">Thiện</span><span class="q-who may">Máy</span><span class="q-who hoa">Anh Hòa</span><span id="q-count"></span></div>
     <div class="q-steps" id="q-steps"></div>
-    <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG.</div>
+    <div class="q-foot">Đường dẫn đều bắt đầu từ Drive › 2027 › JOLIE POSTER 2027. 11/11: thêm bước mô tả + tag; folder ANH LISTING CT/CV đổi thành “… - MAY DUNG”; bản CT không xuất PDF vào 02 PDF KIEM TRA; vẽ bối cảnh theo folder HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG. 12/11: xoá WM bối cảnh bắt buộc trước khi làm listing; máy vẽ xong tự xoá WM, Thiện chỉ xử ảnh sót bằng tab Xoá WM. 13/11: mỗi mã vẽ bộ bối cảnh riêng, lưu {mã} › {QG} › CT/CV › 06 BOI CANH GOC › THU BOI CANH.</div>
   </section>
   <section id="v-wm" aria-label="Xoá WM Gemini"><iframe id="wm-khung" title="Xoá WM Gemini" data-src="xoa-wm/?v=20261112-4"></iframe></section>
 
@@ -898,14 +898,15 @@ const common = [
   {n:5, who:"thien", t:"Duyệt, báo máy đổ full 19 năm", text:"Máy đổ đủ 19 năm.", paths:[["Lưu vào","{MA} › {QG} › {B} › 01 FILE GOC AI"]]},
   {n:6, who:"may", t:"Kiểm tra chéo 19 năm, báo Thiện", text:"Soát thông tin đã đúng hết chưa, có sai chính tả không."}
 ];
-const bgMay = (n, next) => ({n, who:"may", t:"Vẽ bối cảnh 19 năm cho listing, báo Thiện",
-  text:"Theo hướng dẫn khung (trang 09): CHỈ vẽ khung + bối cảnh, để trống giữa khung, không mockup poster (NV mockup tay bằng Photoshop). Poster nằm thấp hơn khung, như ấn lõm xuống.",
+const bgMay = (n, next) => ({n, who:"may", t:"Vẽ bối cảnh 19 năm + tự xoá WM, báo Thiện",
+  text:"Theo hướng dẫn khung (trang 09): CHỈ vẽ khung + bối cảnh, để trống giữa khung, không mockup poster (NV mockup tay bằng Photoshop). Poster nằm thấp hơn khung, như ấn lõm xuống. Vẽ xong máy TỰ XOÁ WM Gemini (công cụ gemini-watermark-remover, chạy trên ảnh tải nguyên bản, giữ bản gốc); ảnh công cụ báo còn sót → máy ghi danh sách cho Thiện. Mỗi mã vẽ bộ bối cảnh riêng, lưu trong đúng mã (không bỏ chung vào MAU GOC).",
   list:[["Khung 1 – có khoảng trống: viền trống 8–10% giữa khung và poster","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-01.jpg"],
         ["Khung 2 – thông dụng: poster sát mép, khung dày, chỉ đổi màu/gỗ/hoạ tiết, ngón tay nằm trên khung","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-02.jpg"],
         ["Khung 3 – canvas: poster bọc tràn mép; người ngồi ghế, khung ngả vào người, 1 cổ tay đỡ sau, 1 tay xuôi theo cạnh, ngón không chạm poster","MAU GOC › HUONG DAN GEN ANH BOI CANH LISTING - MAY DUNG › Listing 09-03.jpg"]],
   paths:[["Lưu vào","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]],
   branch:[["bad","Thiện thấy lỗi nặng → note, máy sửa, lặp lại bước "+n],["ok","OK → bước "+next]]});
-const listing = (n) => ({n, who:"may", t:"Làm bộ ảnh listing 19 năm hoàn chỉnh, báo Thiện", text:"Dùng dữ liệu ở 3 link:",
+const WM_BB = "BẮT BUỘC: chỉ làm khi TOÀN BỘ ảnh bối cảnh đã sạch WM; máy tự kiểm từng ảnh, còn ảnh chưa xoá → DỪNG, báo Thiện trong thread mã, không ghép lên ảnh còn WM. ";
+const listing = (n) => ({n, who:"may", t:"Làm bộ ảnh listing 19 năm hoàn chỉnh, báo Thiện", text:WM_BB + "Dùng dữ liệu ở 3 link:",
   paths:[["Nguồn","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"],["Nguồn","MAU GOC › ANH LISTING {B} - MAY DUNG"],["Nguồn","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]]});
 const moTa = (n) => ({n, who:"may", t:"Viết mô tả + 13 tag cho 19 listing", text:"Theo bộ tag và mẫu mô tả Jolie (không lặp năm/mốc tuổi, tránh tag chung cả shop). Không cần duyệt, máy xong tự chuyển bước.",
   paths:[["Lưu vào","{MA} › {QG} › {B} › 08 MO TA TAG"]]});
@@ -924,7 +925,7 @@ const CT = [...common,
       ["b. Xuất JPEG, up vào","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"],
       ["c. File gốc trang 1, 2, 3, 5, 6 cho listing (CT không xuất PDF vào 02 PDF KIEM TRA)","MAU GOC › ANH LISTING {B} - MAY DUNG"]]},
     bgMay(8, 9)]},
-  {n:9, who:"thien", t:"Xoá watermark ảnh bối cảnh bước 8, up đè; up đủ file bước 7; báo máy"},
+  {n:9, who:"thien", t:"Xoá WM ảnh máy báo còn sót, up đè; up đủ file bước 7; báo máy", text:"Máy đã tự xoá WM ở bước 8. Thiện chỉ xử các ảnh máy báo còn sót + soi nhanh cả bộ, bằng tab Xoá WM của app (thả nhiều ảnh, Sửa tay khi còn sót), rồi up đè. Đủ ảnh sạch mới sang bước 10.", paths:[["Up đè vào","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]]},
   {par:"10 ∥ 11 chạy song song", items:[listing(10), moTa(11)]},
   ...reviewLoop(12, 16),
   finish(16)
@@ -941,8 +942,8 @@ const CV = [...common,
   {par:"10 ∥ 11 chạy song song", items:[
     {n:10, who:"hoa", t:"Điền Canva, resize 3 size, xuất hình", text:"Lấy PDF ở MAU GOC › 02 PDF KIEM TRA, up Canva, điền theo file txt bước 7, resize 3 size.",
       paths:[["Xuất vào","{MA} › {QG} › {B} › 07 JPG LAM MOCKUP"]]},
-    {n:11, who:"thien", t:"Xoá watermark ảnh bối cảnh, up đè", text:"Ảnh bối cảnh máy vẽ ở bước 9 (bản gốc ghi “bước 8”)."}]},
-  {par:"12 ∥ 13 chạy song song", items:[Object.assign(listing(12), {text:"Sau khi Thiện báo. Dùng dữ liệu ở 3 link:"}), moTa(13)]},
+    {n:11, who:"thien", t:"Xoá WM ảnh máy báo còn sót, up đè", text:"Máy đã tự xoá WM ở bước 9. Thiện chỉ xử các ảnh máy báo còn sót + soi nhanh cả bộ, bằng tab Xoá WM của app, rồi up đè. Đủ ảnh sạch mới sang bước 12.", paths:[["Up đè vào","{MA} › {QG} › {B} › 06 BOI CANH GOC › THU BOI CANH"]]}]},
+  {par:"12 ∥ 13 chạy song song", items:[Object.assign(listing(12), {text:WM_BB + "Sau khi Thiện báo. Dùng dữ liệu ở 3 link:"}), moTa(13)]},
   ...reviewLoop(14, 18),
   {n:18, who:"may", t:"Xuất PDF tài liệu bàn giao khách 19 năm, báo Thiện", paths:[["Lưu vào","{MA} › {QG} › {B} › 05 TAI LIEU BAN GIAO"]]},
   {n:19, who:"thien", t:"Check tài liệu bàn giao", branch:[["bad","Có lỗi → note, máy sửa, lặp lại bước 19"],["ok","OK → bước 20"]]},
