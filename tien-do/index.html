@@ -52,6 +52,8 @@ button,select,input{font:inherit;color:inherit}
 .jx-chev{width:18px;height:18px;flex:none;border-radius:50%;display:inline-grid;place-items:center;background:var(--card2);border:1px solid var(--line)}
 .jx-chev::before{content:"";width:5px;height:5px;border-right:1.5px solid var(--acc2);border-bottom:1.5px solid var(--acc2);transform:rotate(-45deg) translate(-1px,-1px)}
 .jx-item[open] .jx-chev::before{transform:rotate(45deg) translate(-1px,-1px)}
+.jx-nuoc{font-size:11px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:999px;color:var(--nc);background:color-mix(in srgb,var(--nc) 16%,transparent);border:1px solid color-mix(in srgb,var(--nc) 45%,transparent)}
+.jx-row.co-nuoc,.d-ma > summary.co-nuoc{box-shadow:inset 3px 0 0 var(--nc)}
 .jx-name{font-size:12px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .jx-flag{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;color:#1a1305;background:var(--warn);box-shadow:0 0 14px rgba(246,184,75,.45)}
 .jx-flag.bad{background:var(--bad);color:#22060a;box-shadow:0 0 14px rgba(255,107,125,.45)}
@@ -523,7 +525,7 @@ function hang(r) {
   const row = el('summary', 'jx-row');
 
   const c1 = el('div'); const code = el('div', 'jx-code');
-  code.append(el('span', 'jx-chev'), el('span', null, r.ma + ' · ' + r.ban));
+  code.append(el('span', 'jx-chev'), el('span', null, r.ma + ' · ' + r.ban), chipNuoc(r.nuoc)); vachNuoc(row, r.nuoc);
   if (xong) code.appendChild(el('span', 'jx-flag ok', 'Xong')); else if (ket) code.appendChild(el('span', 'jx-flag bad', 'Kẹt')); else if (can) code.appendChild(el('span', 'jx-flag', 'Chờ anh'));
   const mb = maySo(r); if (mb) code.appendChild(el('span', 'jx-flag ' + (mb.xong ? 'may' : 'bad'), mb.xong ? 'Máy xong' : 'Máy kẹt'));
   c1.append(code, el('div', 'jx-name', r.ten_mau + ' · ' + r.nuoc));
@@ -703,6 +705,12 @@ async function datDangLam(r, n) {
   await tai();
 }
 
+// Màu theo quốc gia (13/11): USA xanh dương · AUS cam · CAN xanh ngọc · UK hồng · nước khác xám
+const MAU_NUOC = {USA: '#5aa9ff', AUS: '#ff9f43', CAN: '#2dd4bf', UK: '#f472b6'};
+function mauNuoc(n) { return MAU_NUOC[String(n || '').trim().toUpperCase()] || '#a8a5b8'; }
+function chipNuoc(n) { const c = el('span', 'jx-nuoc', String(n || '').toUpperCase()); c.style.setProperty('--nc', mauNuoc(n)); return c; }
+function vachNuoc(e, n) { e.classList.add('co-nuoc'); e.style.setProperty('--nc', mauNuoc(n)); }
+
 /* ---------- Thêm mã ---------- */
 async function themMa() {
   const ma = $('a-ma').value.trim().toUpperCase(), ten = $('a-ten').value.trim().toUpperCase(), nuoc = ($('a-nuoc').value.trim() || 'USA').toUpperCase(), ban = $('a-ban').value, link = $('a-link').value.trim();
@@ -859,7 +867,7 @@ function dlVe() {
     the.addEventListener('toggle', () => { if (the.open) D.dong.delete(m.ma_ban); else D.dong.add(m.ma_ban); });
     const sm = el('summary'), trai = el('div'), code = el('div', 'jx-code');
     const flag = el('span', 'jx-flag ok', 'Đăng đủ'); flag.hidden = true;
-    code.append(el('span', 'jx-chev'), el('span', null, m.ma + ' · ' + m.ban), flag);
+    code.append(el('span', 'jx-chev'), el('span', null, m.ma + ' · ' + m.ban), chipNuoc(m.nuoc), flag); vachNuoc(sm, m.nuoc);
     trai.append(code, el('div', 'jx-name', m.ten_mau + ' · ' + m.nuoc));
     const bar = el('div', 'd-bar'); bar.appendChild(el('i'));
     sm.append(trai, el('div', 'd-dem'), bar);
